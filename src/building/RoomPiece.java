@@ -1,6 +1,9 @@
 package building;
 
 import java.awt.Point;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class RoomPiece {
     
@@ -11,14 +14,20 @@ public class RoomPiece {
     /**
      * 0, 1, 2, or 3
      */
-    public int rot = 0;
+    public int rot;
     
     public RoomPiece(RoomPieceTemplate template) {
         this.template = template;
+        this.pos = new Point(0,0);
+        this.rot = 0;
     }
     
     public void setPosition(Point pos) {
         this.pos = pos;
+    }
+    
+    public Point getPosition() {
+        return pos;
     }
     
     public void shiftPosition(Point shift) {
@@ -27,6 +36,10 @@ public class RoomPiece {
     
     public void setRotation(int rot) {
         this.rot = ((rot % 4) + 4) % 4; // gotta be positive
+    }
+    
+    public int getRotation() {
+        return this.rot;
     }
     
     public int width() {
@@ -73,6 +86,24 @@ public class RoomPiece {
     
     public CellType getAbsolute(int absX, int absY) {
         return get(absX - pos.x, absY - pos.y);
+    }
+    
+    public List<Point> points() {
+        List<Point> result = new ArrayList<Point>();
+        for (int x = 0; x < width(); x++) {
+            for (int y = 0; y < height(); y++) {
+                if (get(x,y) != CellType.EMPTY) {
+                    result.add(new Point(x,y));
+                }
+            }
+        }
+        return result;
+    }
+    
+    public List<Point> pointsAbsolute() {
+        return points().stream()
+                .map(p -> new Point(p.x + pos.x, p.y + pos.y))
+                .collect(Collectors.toList());
     }
 
 }
