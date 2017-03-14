@@ -30,5 +30,4 @@ public class RoomPieceTemplate {
         return sb.toString();
     }
     
-    
 }

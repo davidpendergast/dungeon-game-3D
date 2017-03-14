@@ -15,6 +15,7 @@ import java.util.Queue;
 import javax.imageio.ImageIO;
 
 import building.CellType;
+import building.RoomPiece;
 import building.RoomPieceTemplate;
 
 public class TemplateLoader {
@@ -47,6 +48,7 @@ public class TemplateLoader {
             
             for (RoomPieceTemplate rpt : templates) {
                 System.out.println(rpt);
+                System.out.println(new RoomPiece(rpt).getDoors());
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -143,4 +145,5 @@ public class TemplateLoader {
     private static boolean isntEmpty(BufferedImage img, Point p) {
         return rgbToCell.containsKey(img.getRGB(p.x, p.y));
     }
+    
 }

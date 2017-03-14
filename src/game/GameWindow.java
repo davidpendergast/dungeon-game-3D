@@ -3,6 +3,8 @@ package game;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.util.function.Consumer;
 
 import javax.swing.JFrame;
@@ -49,6 +51,14 @@ public class GameWindow {
             drawer.accept(offscreenImage);
         }
         panel.repaint();
+    }
+    
+    public void addMouseListener(MouseListener l) {
+        frame.addMouseListener(l);
+    }
+    
+    public void addMouseMotionListener(MouseMotionListener l) {
+        frame.addMouseMotionListener(l);
     }
 
 }

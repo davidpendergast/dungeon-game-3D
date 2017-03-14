@@ -3,13 +3,14 @@ package building;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class World {
     
     List<RoomPiece> pieces;
     
     public World() {
-        this.pieces = new ArrayList<RoomPiece>();
+        this.pieces = new CopyOnWriteArrayList<RoomPiece>(); // lololol
     }
     
     public CellType getCellType(int x, int y) {
