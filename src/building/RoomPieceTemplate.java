@@ -179,9 +179,9 @@ public class RoomPieceTemplate {
                 Point p1 = extrema[2];
                 Point p2 = extrema[3];
                 if (get(p1.x-1, p1.y) == CellType.EMPTY) {
-                    return new DoorTemplate(p1, p2);
-                } else {
                     return new DoorTemplate(p2, p1);
+                } else {
+                    return new DoorTemplate(p1, p2);
                 }
             }
         }

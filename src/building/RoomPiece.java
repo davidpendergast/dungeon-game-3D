@@ -162,14 +162,6 @@ public class RoomPiece {
         return getSpecial(p.x, p.y);
     }
     
-//    public CellType getAbsolute(int absX, int absY) {
-//        return get(absX - pos.x, absY - pos.y);
-//    }
-    
-//    public CellType getAbsolute(Point p) {
-//        return getAbsolute(p.x, p.y);
-//    }
-    
     public Point worldToTemplate(Point p) {
         p = new Point(p.x - pos.x, p.y - pos.y);
         if (flipped) {
@@ -230,12 +222,6 @@ public class RoomPiece {
         return result;
     }
     
-//    public List<Point> pointsAbsolute() {
-//        return points().stream()
-//                .map(p -> new Point(p.x + pos.x, p.y + pos.y))
-//                .collect(Collectors.toList());
-//    }
-    
     public boolean collides(RoomPiece other) {
         for (Point p : points()) {
             CellType otherType = other.get(p);
@@ -263,9 +249,9 @@ public class RoomPiece {
         Point right = position[1];
         
         if (left.x == right.x) {
-            return (left.y > right.y) ? EAST : WEST;
+            return (left.y > right.y) ? WEST : EAST;
         } else {
-            return (left.x > right.x) ? NORTH : SOUTH;
+            return (left.x > right.x) ? SOUTH : NORTH;
         }
     }
     
