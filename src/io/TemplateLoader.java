@@ -48,7 +48,7 @@ public class TemplateLoader {
             
             for (RoomPieceTemplate rpt : templates) {
                 System.out.println(rpt);
-                System.out.println(new RoomPiece(rpt).getDoors());
+                //System.out.println(new RoomPiece(rpt).getDoors());
             }
         } catch (IOException e) {
             e.printStackTrace();

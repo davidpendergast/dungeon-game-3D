@@ -23,8 +23,12 @@ public class _Launcher {
         TemplateLoader.init();
         Options opts = new Options();
         opts.size = 400;
-        opts.rand = new Random();
+        int rSeed = (int)(Math.random()*100);
+        System.out.println("rSeed = "+rSeed);
+        opts.rand = new Random(rSeed);
         opts.templates = TemplateLoader.templates;
+        opts.maxHeight = 100;
+        opts.maxWidth = 100;
         World w = new World();
         WorldDrawer drawer = new DebugWorldDrawer(w);
                 
@@ -79,6 +83,7 @@ public class _Launcher {
         startDrawing(window);
         
         WorldFactory.generate(opts, w);
+        System.out.println("Done creating world!");
     }
     
     public static void startDrawing(GameWindow window) {

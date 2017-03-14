@@ -4,35 +4,66 @@ import static building.Direction.*;
 
 import java.awt.Point;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Queue;
-import java.util.Set;
-import java.util.function.Predicate;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
+
+import building.RoomPieceTemplate.DoorTemplate;
 
 public class RoomPiece {
     
     public RoomPieceTemplate template;
     
     public Point pos;
-    
     public Direction rot;
+    public boolean flipped;
+    
+    public World world;
     
     /**
      * Rooms whose doors are connected to this one.
+     * Door id -> RoomPiece
      */
-    public List<RoomPiece> neighbors;
+    public Map<Integer, RoomPiece> neighbors;
     
     public RoomPiece(RoomPieceTemplate template) {
         this.template = template;
         this.pos = new Point(0,0);
         this.rot = Direction.NORTH;
-        this.neighbors = new ArrayList<RoomPiece>();
+        this.flipped = false;
+        this.neighbors = new HashMap<Integer, RoomPiece>();
+    }
+    
+    public void addNieghbor(RoomPiece other, int door) {
+        if (neighbors.containsKey(door)) {
+            //throw new IllegalArgumentException("There's already a neighbor at" + 
+            //        "door " + door);
+            System.out.println("There's already a neighbor at" + 
+                    " door " + door);
+        } else {
+            neighbors.put(door, other);
+        }
+    }
+    
+    public void addToWorld(World w) {
+        this.world = w;
+    }
+    
+    public void removeFromWorld() {
+        this.world = null;
+    }
+    
+    private void makeSureNotInWorld() {
+        if (this.world != null) {
+            throw new RuntimeException("Cannot alter RoomPiece after it's"
+                    + " been added to a world.");
+        }
     }
     
     public void setPosition(Point pos) {
+        makeSureNotInWorld();
         this.pos = pos;
     }
     
@@ -40,15 +71,26 @@ public class RoomPiece {
         return pos;
     }
     
+    public void setFlipped(boolean flipped) {
+        this.flipped = flipped;
+    }
+    
+    public boolean getFlipped() {
+        return this.flipped;
+    }
+    
     public void shiftPosition(Point shift) {
+        makeSureNotInWorld();
         this.pos = new Point(pos.x + shift.x, pos.y + shift.y);
     }
     
     public void setRotation(Direction rot) {
+        makeSureNotInWorld();
         this.rot = rot;
     }
     
     public void setRotation(int r) {
+        makeSureNotInWorld();
         this.rot = Direction.values()[((r % 4) + 4) % 4];
     }
     
@@ -76,7 +118,7 @@ public class RoomPiece {
         if (!isValid(x,y)) {
             return CellType.EMPTY;
         } else {
-            Point t = rotateToTemplateCoords(new Point(x,y));
+            Point t = worldToTemplate(new Point(x,y));
             return template.get(t.x, t.y);
         }
     }
@@ -85,15 +127,54 @@ public class RoomPiece {
         return get(p.x, p.y);
     }
     
-    public CellType getAbsolute(int absX, int absY) {
-        return get(absX - pos.x, absY - pos.y);
+    public CellType getSpecial(int x, int y) {
+        CellType templateType = get(x, y);
+        if (templateType == CellType.FLOOR) {
+            switch(getRotation()) {
+                case NORTH: return CellType.N_FLOOR;
+                case EAST: return CellType.E_FLOOR;
+                case WEST: return CellType.W_FLOOR;
+                case SOUTH: return CellType.S_FLOOR;
+            }
+        } else if (templateType == CellType.DOOR) {
+            Door d = getDoor(x, y);
+            if (d == null) {
+                return CellType.DOOR; // weird threading issue with Drawer...
+            }
+            if (!neighbors.containsKey(d.id)) {
+                return CellType.DOOR;
+            } else if (neighbors.get(d.id) == null) {
+                return CellType.WALLED_DOOR;
+            } else {
+                return CellType.LINKED_DOOR;
+            }
+        } else {
+            return templateType;
+        }
+        return CellType.EMPTY;
     }
     
-    public CellType getAbsolute(Point p) {
-        return getAbsolute(p.x, p.y);
+    public Point centerPoint() {
+        return new Point(pos.x + width()/2, pos.y + height()/2);
     }
     
-    public Point rotateToTemplateCoords(Point p) {
+    public CellType getSpecial(Point p) {
+        return getSpecial(p.x, p.y);
+    }
+    
+//    public CellType getAbsolute(int absX, int absY) {
+//        return get(absX - pos.x, absY - pos.y);
+//    }
+    
+//    public CellType getAbsolute(Point p) {
+//        return getAbsolute(p.x, p.y);
+//    }
+    
+    public Point worldToTemplate(Point p) {
+        p = new Point(p.x - pos.x, p.y - pos.y);
+        if (flipped) {
+            p = new Point(p.y, p.x);
+        }
         switch(rot) {
             case NORTH:
                 return p;
@@ -108,15 +189,39 @@ public class RoomPiece {
         }
     }
     
-    private boolean isValid(int x, int y) {
-        return x >= 0 && y >= 0 && x < width() && y < height();
+    public Point templateToWorld(Point p) {
+        Point res;
+        switch(rot) {
+            case NORTH:
+                res = p;
+                break;
+            case EAST:
+                res = new Point(height() - p.y - 1, p.x);
+                break;
+            case WEST:
+                res = new Point(p.y, width() - p.x - 1);
+                break;
+            case SOUTH:
+                res = new Point(width() - p.x - 1, height() - p.y - 1);
+                break;
+            default:
+                throw new RuntimeException("strange new direction encountered...");
+        }
+        if (flipped) {
+            res = new Point(res.y, res.x);
+        }
+        
+        return new Point(res.x + pos.x, res.y + pos.y);
     }
     
+    private boolean isValid(int x, int y) {
+        return x >= pos.x && y >= pos.y && x < pos.x + width() && y < pos.y + height();
+    } 
     
     public List<Point> points() {
         List<Point> result = new ArrayList<Point>();
-        for (int x = 0; x < width(); x++) {
-            for (int y = 0; y < height(); y++) {
+        for (int x = pos.x; x < pos.x + width(); x++) {
+            for (int y = pos.y; y < pos.y + height(); y++) {
                 if (get(x,y) != CellType.EMPTY) {
                     result.add(new Point(x,y));
                 }
@@ -125,110 +230,71 @@ public class RoomPiece {
         return result;
     }
     
-    public List<Point> pointsAbsolute() {
-        return points().stream()
-                .map(p -> new Point(p.x + pos.x, p.y + pos.y))
-                .collect(Collectors.toList());
-    }
-    
-    public void addNeighbor(RoomPiece rp) {
-        this.neighbors.add(rp);
-    }
-    
-    public void removeNeighbor(RoomPiece rp) {
-        this.neighbors.remove(rp);
-    }
+//    public List<Point> pointsAbsolute() {
+//        return points().stream()
+//                .map(p -> new Point(p.x + pos.x, p.y + pos.y))
+//                .collect(Collectors.toList());
+//    }
     
     public boolean collides(RoomPiece other) {
-        for (Point p : pointsAbsolute()) {
-            CellType otherType = other.getAbsolute(p);
-            if (otherType != CellType.EMPTY && getAbsolute(p) != otherType) {
+        for (Point p : points()) {
+            CellType otherType = other.get(p);
+            if (otherType != CellType.EMPTY && get(p) != otherType) {
                 return true;
             }
         }
         return false;
     }
     
-    public List<Door> getDoors() {
-        Set<Point> doorPoints = pointsAbsolute().stream()
-                .filter(p -> getAbsolute(p) == CellType.DOOR)
-                .collect(Collectors.toSet());
-        List<Door> result = new ArrayList<Door>();
-        while (!doorPoints.isEmpty()) {
-            Point seed = doorPoints.iterator().next();
-            List<Point> thisDoor = floodRemove(doorPoints, seed, 
-                    p -> getAbsolute(p) == CellType.DOOR);
-            
-            Door door = getDoor(thisDoor);
-            if (door != null) {
-                result.add(door);
-            }
-        }
-        
-        return result;
+    public int numDoors() {
+        return template.numDoors();
     }
     
-    private Door getDoor(Collection<Point> doorPoints) {
-        Point[] extrema = PointUtils.getExtremePoints(doorPoints);
-        int width = extrema[1].x - extrema[0].x + 1;
-        int height = extrema[3].y - extrema[2].y + 1;
-        if ((width > 1 && height > 1) || (width == 0 && height == 0)) {
-            return null;
+    public Point[] doorPosition(int i) {
+        DoorTemplate d = template.getDoor(i);
+        Point left = templateToWorld(d.left);
+        Point right = templateToWorld(d.right);
+        return new Point[] {left, right};
+    }
+    
+    public Direction doorDirection(int i) {
+        Point[] position = doorPosition(i);
+        Point left = position[0];
+        Point right = position[1];
+        
+        if (left.x == right.x) {
+            return (left.y > right.y) ? EAST : WEST;
         } else {
-            if (width > 1) {
-                // horizontal door
-                Point p1 = extrema[0];
-                Point p2 = extrema[1];
-                if (getAbsolute(p1.x, p1.y-1) == CellType.EMPTY) {
-                    return new Door(p1, p2);
-                } else {
-                    return new Door(p2, p1);
-                }
-            } else {
-                // vertical door
-                Point p1 = extrema[2];
-                Point p2 = extrema[3];
-                if (getAbsolute(p1.x-1, p1.y) == CellType.EMPTY) {
-                    return new Door(p1, p2);
-                } else {
-                    return new Door(p2, p1);
-                }
-            }
+            return (left.x > right.x) ? NORTH : SOUTH;
         }
     }
     
-    /**
-     * Removes the filter-satisfying points flood-adjacent to a seed point.
-     */
-    private static List<Point> floodRemove(Set<Point> points, Point seed, Predicate<Point> filter) {
-        List<Point> res = new ArrayList<Point>();
-        Queue<Point> q = new LinkedList<Point>();
-        q.add(seed);
-        boolean seedInPoints = points.contains(seed);
-        points.remove(seed);
-        Point p;
-        while (!q.isEmpty()) {
-            p = q.poll();
-            res.add(p);
-            Point[] neighbors = {new Point(p.x-1, p.y), new Point(p.x+1, p.y),
-                    new Point(p.x, p.y-1), new Point(p.x, p.y+1)};
-            for (Point n : neighbors) {
-                if (points.contains(n) && filter.test(n)) {
-                    points.remove(n);
-                    q.add(n);
-                }
-            }
+    public List<Door> getDoors() {
+        List<Door> res = new ArrayList<Door>();
+        for (int i = 0; i < numDoors(); i++) {
+            res.add(new Door(this, i));
         }
-        
-        if (!filter.test(seed)) {
-            // if seed isn't part of the flood fill, fix stuff
-            res.remove(seed);
-            if (seedInPoints) {
-                points.add(seed);
-            }
-        }
-        
         return res;
+    }
+    
+    public List<Door> getAvailableDoors() {
+        return getDoors().stream()
+                .filter(door -> !neighbors.containsKey(door.id))
+                .collect(Collectors.toList());
+        
+    }
+    
+    public Door getDoor(Point p) {
+        for (Door d : getDoors()) {
+            if (PointUtils.inBox(p, d.left(), d.right())) {
+                return d;
+            }
+        }
+        return null;
+    }
+    
+    public Door getDoor(int x, int y) {
+        return getDoor(new Point(x, y));
     }
     
     public String toString() {
@@ -243,58 +309,63 @@ public class RoomPiece {
     }
     
     public static class Door {
-        /**
-         * Leftmost point of the door you'd see when standing inside the room
-         * and looking out.
-         */
-        final Point left;
-        /**
-         * Rightmost point of the door you'd see when standing inside the room
-         * and looking out.
-         */
-        final Point right;
+        RoomPiece roomPiece;
+        int id;
         
-        public Door(Point left, Point right) {
-            assert (left.x == right.x || left.y == right.y);
-            assert !(left.equals(right));
-            this.left = left;
-            this.right = right;
+        public Door(RoomPiece rp, int id) {
+            this.roomPiece = rp;
+            this.id = id;
         }
         
-        public boolean isHorz() {
-            return left.y == right.y;
+        public Point left() {
+            return roomPiece.doorPosition(id)[0];
         }
         
-        public boolean isVert() {
-            return left.x == left.y;
+        public Point right() {
+            return roomPiece.doorPosition(id)[1];
         }
         
         public int width() {
-            if (isHorz()) {
-                return (int)Math.abs(left.x - right.x);
-            } else {
-                return (int)Math.abs(left.y - right.y);
-            }
-        }
-        
-        /**
-         * Direction door opens away from the room.
-         */
-        public Direction dir() {
-            if (isHorz()) {
-                return left.x < right.x ? NORTH : SOUTH;
-            } else {
-                return left.y < right.y ? EAST : WEST;
-            }
+            Point left = left();
+            Point right = right();
+            return Math.max(Math.abs(left.x - right.x), Math.abs(left.y - right.y));
         }
         
         public boolean isCompatible(Door other) {
             return width() == other.width() && dir().isOpposite(other.dir());
         }
         
-        public String toString() {
-            return "(left:"+left.x+", "+left.y+", right:"+right.x+", "+right.y+", dir:"+dir()+")";
+        public Direction dir() {
+            return roomPiece.doorDirection(id);
+        }
+        
+        public boolean equals(Object other) {
+            if (other instanceof Door) {
+                return Objects.equals(roomPiece, ((Door) other).roomPiece)
+                        && id == ((Door) other).id;
+            } else {
+                return false;
+            }
+        }
+        
+        public int hashCode() {
+            return Objects.hash(id, roomPiece);
         }
     }
-
+    
+    public static List<RoomPiece> allOrientations(RoomPieceTemplate template) {
+        List<RoomPiece> res = new ArrayList<RoomPiece>();
+        
+        //for (boolean flip : new boolean[] {false, true}) {
+        for (boolean flip : new boolean[] {false}) {
+            for (Direction dir : Direction.values()) {
+                RoomPiece rp = new RoomPiece(template);
+                rp.setFlipped(flip);
+                rp.setRotation(dir);
+                res.add(rp);
+            }
+        }
+        assert res.size() == 4;
+        return res;
+    }
 }

@@ -27,14 +27,41 @@ public class DebugWorldDrawer implements WorldDrawer{
         
         int minX = camera.x / cellSize - 1;
         int minY = camera.y / cellSize - 1;
-        int maxX = minX + w / cellSize + 1;
-        int maxY = minY + h / cellSize + 1;
+        int maxX = minX + w / cellSize + 2;
+        int maxY = minY + h / cellSize + 2;
         for (int x = minX; x < maxX; x++) {
             for (int y = minY; y < maxY; y++) {
-                g.setColor(world.getCellType(x, y).color);
+                if (x == world.bounds[0] || x == world.bounds[1] 
+                        || y == world.bounds[2] || y == world.bounds[3]) {
+                    g.setColor(Color.RED);
+                } else {
+                    g.setColor(world.getSpecialCellType(x, y).color);
+                }
                 g.fillRect(x*cellSize - camera.x, y*cellSize - camera.y, cellSize, cellSize);
             }
         }
+        
+        drawGraph(g);
+    }
+    
+    private void drawGraph(Graphics g) {
+        Color color = Color.RED;
+        g.setColor(color);
+        for (RoomPiece piece : world.pieces) {
+            Point center = worldToScreen(piece.centerPoint());
+            g.fillOval(center.x, center.y, cellSize, cellSize);
+            for (RoomPiece n : piece.neighbors.values()) {
+                if (n != null) {
+                    Point nCenter = worldToScreen(n.centerPoint()); 
+                    nCenter = PointUtils.add(nCenter, new Point(cellSize/2, cellSize/2));
+                    g.drawLine(center.x, center.y, nCenter.x, nCenter.y); // double draws, i know
+                }
+            }
+        }
+    }
+    
+    public Point worldToScreen(Point p) {
+        return new Point(p.x * cellSize - cameraXY.x, p.y * cellSize - cameraXY.y);
     }
 
     @Override

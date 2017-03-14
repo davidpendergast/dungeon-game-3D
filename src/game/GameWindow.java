@@ -3,6 +3,9 @@ package game;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.util.function.Consumer;
@@ -14,7 +17,7 @@ public class GameWindow {
     
     private JFrame frame;
     private JPanel panel;
-    private Image offscreenImage;
+    private Image[] offscreenImage = {null};
     
     private Consumer<Image> drawer = null;
     
@@ -28,8 +31,9 @@ public class GameWindow {
         panel = new JPanel() {
             public void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                if (offscreenImage != null) {
-                    g.drawImage(offscreenImage, 0, 0, null);
+                Image img = offscreenImage[0]; // yay thread safety
+                if (img != null) {
+                    g.drawImage(img, 0, 0, null);
                 }
             }
         };
@@ -39,7 +43,8 @@ public class GameWindow {
         frame.pack();
         frame.setVisible(true);
         
-        offscreenImage = panel.createVolatileImage(width, height);
+        offscreenImage[0] = panel.createVolatileImage(width, height);
+        addResizeListener();
     }
     
     public void setDrawer(Consumer<Image> drawer) {
@@ -48,7 +53,7 @@ public class GameWindow {
     
     public void draw() {
         if (drawer != null) {
-            drawer.accept(offscreenImage);
+            drawer.accept(offscreenImage[0]);
         }
         panel.repaint();
     }
@@ -59,6 +64,20 @@ public class GameWindow {
     
     public void addMouseMotionListener(MouseMotionListener l) {
         frame.addMouseMotionListener(l);
+    }
+    
+    private void addResizeListener() {
+        frame.addComponentListener(new ComponentAdapter() {
+
+            @Override
+            public void componentResized(ComponentEvent e) {
+                Dimension size = panel.getSize();
+                offscreenImage[0] = panel.createVolatileImage(size.width, size.height);
+            }
+
+            
+            
+        });
     }
 
 }

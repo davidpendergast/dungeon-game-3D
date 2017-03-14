@@ -8,7 +8,16 @@ public enum CellType {
     EMPTY(0, " ", Color.GRAY), 
     WALL(1, "X", Color.BLACK), 
     FLOOR(2, "-", Color.WHITE), 
-    DOOR(3, "=", Color.GREEN);
+    DOOR(3, "=", Color.GREEN),
+    
+    // "Special" cell types, used for rendering purposes
+    WALLED_DOOR(4, "?", Color.DARK_GRAY),
+    LINKED_DOOR(5, "=", Color.CYAN),
+    
+    N_FLOOR(6, "-", Color.ORANGE),
+    E_FLOOR(7, "-", Color.PINK),
+    W_FLOOR(8, "-", Color.MAGENTA),
+    S_FLOOR(9, "-", Color.BLUE);
     
     public final int id;
     public final String str;

@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import building.RoomPiece.Door;
+import building.RoomPieceTemplate.DoorTemplate;
 
 public class WorldFactory {
     
@@ -17,8 +18,8 @@ public class WorldFactory {
         public List<RoomPieceTemplate> templates = null;
         public int size = 10;
         public Random rand = new Random();
-        public Integer maxWidth = null;
-        public Integer maxHeight = null;
+        public Integer maxWidth = 30;
+        public Integer maxHeight = 30;
     }
     
     public static World generate(Options opts) {
@@ -34,28 +35,25 @@ public class WorldFactory {
             w.add(start);
         }
         
-        List<Door> doors = new ArrayList<Door>();
-        for (RoomPiece rp : w.pieces) {
-            doors.addAll(rp.getDoors());
-        }
+        setBounds(w, opts);
+        
+        List<Door> doors;
         
         doorLoop:
-        while (opts.rand.nextDouble() > 1/(double)opts.size) {
-            Door targetDoor = choose(doors, opts.rand);
-            doors.remove(targetDoor); // each door gets one try
-            
-            if (targetDoor == null) {
-                break;
+        while (true) {
+            doors = w.availableDoors();
+            if (doors.isEmpty()) {
+                break doorLoop;
             }
             
+            Door targetDoor = choose(doors, opts.rand);
+            
             RoomPieceTemplate template = choose(opts.templates, opts.rand);
-            RoomPiece piece = new RoomPiece(template);
+            List<RoomPiece> orientations = RoomPiece.allOrientations(template);
+            Collections.shuffle(orientations, opts.rand);
             
-            int rotOffset = opts.rand.nextInt(4);
-            
-            for (int i = 0; i < 4; i++) {
-                piece.setPosition(new Point(0, 0));
-                piece.setRotation(i + rotOffset);
+            for (RoomPiece piece : orientations) {
+                
                 List<Door> pieceDoors = piece.getDoors();
                 
                 pieceDoors = pieceDoors.stream()
@@ -64,18 +62,16 @@ public class WorldFactory {
                 
                 Collections.shuffle(pieceDoors, opts.rand);
                 for (Door d : pieceDoors) {
-                    piece.setPosition(new Point(0, 0)); // kinda jank
                     alignDoors(targetDoor, d, piece);
                     
-                    if (!w.collides(piece)) {
+                    if (!w.collides(piece) && !outOfBounds(piece, opts)) {
                         // it fits!
                         System.out.println(piece);
                         w.add(piece);
-                        for (Door dToAdd : piece.getDoors()) {
-                            if (!dToAdd.equals(d)) {    // TODO Door has no equals method
-                                doors.add(dToAdd);
-                            }
-                        }
+                        
+                        piece.addNieghbor(targetDoor.roomPiece, d.id);
+                        targetDoor.roomPiece.addNieghbor(piece, targetDoor.id);
+
                         try {
                             Thread.sleep(1000);
                         } catch (InterruptedException e) {
@@ -84,7 +80,10 @@ public class WorldFactory {
                         continue doorLoop;
                     }
                 }
+                
             }
+            // couldn't make it fit
+            targetDoor.roomPiece.addNieghbor(null, targetDoor.id);
         }
         
         return w;
@@ -101,9 +100,43 @@ public class WorldFactory {
     private static void alignDoors(Door door1, Door door2, RoomPiece rp) {
         assert door1.isCompatible(door2);
         // we want to shift d2 onto d1
-        int dx = door2.left.x - door1.right.x;
-        int dy = door2.left.y - door1.right.y;
         
-        rp.shiftPosition(PointUtils.subtract(door1.left, door2.right));
+        rp.shiftPosition(PointUtils.subtract(door1.left(), door2.right()));
+    }
+    
+    private static boolean outOfBounds(RoomPiece rp, Options opts) {
+        Integer width = opts.maxWidth;
+        if (width != null) {
+            if (rp.pos.x < 0 || rp.pos.x + rp.width() > width) {
+                return true;
+            }
+        }
+        
+        Integer height = opts.maxHeight;
+        if (height != null) {
+            if (rp.pos.y < 0 || rp.pos.y + rp.height() > height) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    private static void setBounds(World w, Options opts) {
+        if (opts.maxWidth == null) {
+            w.bounds[0] = null;
+            w.bounds[1] = null;
+        } else {
+            w.bounds[0] = 0;
+            w.bounds[1] = opts.maxWidth;
+        }
+        
+        if (opts.maxHeight == null) {
+            w.bounds[2] = null;
+            w.bounds[3] = null;
+        } else {
+            w.bounds[2] = 0;
+            w.bounds[3] = opts.maxHeight;
+        }
     }
 }

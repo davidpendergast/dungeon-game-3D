@@ -1,6 +1,7 @@
 package building;
 
 import java.awt.Point;
+import java.util.Arrays;
 import java.util.Collection;
 
 public class PointUtils {
@@ -17,6 +18,10 @@ public class PointUtils {
             return new int[] {extrema[0].x, extrema[1].x, 
                     extrema[2].y, extrema[3].y};
         }
+    }
+    
+    public static int[] getExtrema(Point...points) {
+        return getExtrema(Arrays.asList(points));
     }
     
     /**
@@ -45,6 +50,12 @@ public class PointUtils {
     
     public static Point add(Point p1, Point p2) {
         return new Point(p1.x + p2.x, p1.y + p2.y);
+    }
+    
+    public static boolean inBox(Point p, Point b1, Point b2) {
+        int[] extrema = getExtrema(b1, b2);
+        return extrema[0] <= p.x && p.x <= extrema[1] 
+                && extrema[2] <= p.y && p.y <= extrema[3];
     }
 
 }
