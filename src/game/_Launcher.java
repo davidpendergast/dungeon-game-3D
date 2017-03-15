@@ -1,18 +1,16 @@
 package game;
 
-import java.awt.Color;
-import java.awt.Graphics;
 import java.awt.Point;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionAdapter;
-import java.awt.event.MouseMotionListener;
-import java.util.Collections;
 import java.util.Random;
 import java.util.stream.Collectors;
 
 import building.DebugWorldDrawer;
-import building.RoomPiece;
 import building.World;
 import building.WorldDrawer;
 import building.WorldFactory;
@@ -31,12 +29,13 @@ public class _Launcher {
                 .filter(x -> !x.isConnector()).collect(Collectors.toList());
         opts.connectors = TemplateLoader.templates.stream()
                 .filter(x -> x.isConnector()).collect(Collectors.toList());
-        opts.maxHeight = 60;
         opts.maxWidth = 100;
+        opts.maxHeight = 60;
         World w = new World();
-        WorldDrawer drawer = new DebugWorldDrawer(w);
+        WorldDrawer drawer = new DebugWorldDrawer();
+        drawer.setWorld(w);
                 
-        GameWindow window = new GameWindow(850, 640);
+        GameWindow window = new GameWindow((opts.maxWidth+3)*8, (opts.maxHeight+5)*8);
         
         final Point[] lastDrag = {null};
         window.addMouseMotionListener(new MouseMotionAdapter() {
@@ -50,57 +49,80 @@ public class _Launcher {
                 lastDrag[0] = new Point(e.getX(), e.getY());
             }
         });
-        window.addMouseListener(new MouseListener() {
-
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                // TODO Auto-generated method stub
-                
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-                // TODO Auto-generated method stub
-                
-            }
-
+        window.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
                 lastDrag[0] = null;
                 
             }
+        });
+        window.addKeyListener(new KeyListener() {
 
             @Override
-            public void mouseEntered(MouseEvent e) {
+            public void keyTyped(KeyEvent e) {
                 // TODO Auto-generated method stub
                 
             }
 
             @Override
-            public void mouseExited(MouseEvent e) {
+            public void keyPressed(KeyEvent e) {
+                System.out.println("Pressed: "+e.getKeyChar());
+                switch(e.getKeyCode()) {
+                    case KeyEvent.VK_G:
+                        GlobalSettings.showGraph = !GlobalSettings.showGraph;
+                        break;
+                    case KeyEvent.VK_D:
+                        GlobalSettings.showDungeon = !GlobalSettings.showDungeon;
+                        break;
+                    case KeyEvent.VK_ENTER:
+                        World w = new World();
+                        drawer.setWorld(w);
+                        generateInNewThread(opts, w);
+                }
+                
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
                 // TODO Auto-generated method stub
                 
             }
             
         });
-        window.setDrawer(drawer::draw);
-        startDrawing(window);
         
-        WorldFactory.generate(opts, w);
-        System.out.println("Done creating world!");
+        window.setDrawer(drawer::draw);
+        //startDrawing(window);
+        
+        generateInNewThread(opts, w);
+       
+        while (true) {
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            window.draw();
+        }
     }
     
-    public static void startDrawing(GameWindow window) {
+    public static void generateInNewThread(Options opts, World w) {
         new Thread(() -> {
-            while (true) {
-                try {
-                    Thread.sleep(10);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                window.draw();
-            }
+            WorldFactory.generate(opts, w);
+            System.out.println("Done creating world!");
         }).start();
     }
+    
+//    public static void startDrawing(GameWindow window) {
+//        new Thread(() -> {
+//            while (true) {
+//                try {
+//                    Thread.sleep(10);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//                window.draw();
+//            }
+//        }).start();
+//    }
 }
  

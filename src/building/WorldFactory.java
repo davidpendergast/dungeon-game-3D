@@ -14,6 +14,8 @@ import building.RoomPieceTemplate.DoorTemplate;
 
 public class WorldFactory {
     
+    private static final int DELAY = 50;
+    
     public static class Options {
         public List<RoomPieceTemplate> templates = null;
         public List<RoomPieceTemplate> connectors = null;
@@ -29,6 +31,9 @@ public class WorldFactory {
     }
 
     public static World generate(Options opts, World w) {
+        w.isGenerating = true;
+        setBounds(w, opts);
+        
         if (w.pieces.isEmpty()) {
             RoomPiece start = new RoomPiece(choose(opts.templates, opts.rand));
             start.setPosition(new Point(40,20));
@@ -36,7 +41,6 @@ public class WorldFactory {
             w.add(start);
         }
         
-        setBounds(w, opts);
         
         List<Door> doors;
         
@@ -65,12 +69,12 @@ public class WorldFactory {
                 for (Door d : pieceDoors) {
                     alignDoors(targetDoor, d, piece);
                     w.ghostPieces.add(piece);
-                    sleep(100);
+                    sleep(1);
                     w.ghostPieces.remove(piece);
                     if (!w.collides(piece) && !w.outOfBounds(piece)) {
                         w.add(piece);
 
-                        sleep(500);
+                        sleep(5);
                         continue doorLoop;
                     }
                 }
@@ -79,26 +83,69 @@ public class WorldFactory {
             targetDoor.roomPiece.addNeighbor(null, targetDoor.id);
         }
         
+        placeConnectors(opts, w);
+        
+        w.isGenerating = false;
         return w;
     }
     
+    /**
+     * LOOPS
+     */
     private static void placeConnectors(Options opts, World w) {
         clearWalledOffDoors(w);
+        
+        List<Door> unmatchedDoors = w.availableDoors();
+        Collections.shuffle(unmatchedDoors, opts.rand);
+        
+        // lol this is murder
+        doorLoop:
+        for (Door start : unmatchedDoors) {
+            if (start.roomPiece.neighbors.containsKey(start.id)) {
+                // door is already matched
+                continue;
+            }
+            
+            for (RoomPieceTemplate template : opts.connectors) {
+                assert template.isConnector();
+                List<RoomPiece> orientations = RoomPiece.allOrientations(template);
+                for (RoomPiece connector : orientations) {
+                    List<Door> connectorDoors = connector.getDoors();
+                    for (int i = 0; i < 2; i++) {
+                        Door d1 = connectorDoors.get(i);
+                        Door d2 = connectorDoors.get((i+1) % 2);
+                        alignDoors(start, d1, connector);
+                        
+                        if (w.doorThatConnectsTo(d2) != null) {
+                            // holy crap it connects
+                            // i just hope it doesn't collide...
+                            if (w.add(connector)) {
+                                continue doorLoop;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // no connector found...
+            start.roomPiece.addNeighbor(null, start.id);
+        }
+        
     }
     
     private static void clearWalledOffDoors(World w) {
         for (RoomPiece rp : w.pieces) {
-            for (int id : rp.neighbors.keySet()) {
-                if (rp.neighbors.get(id) == null) {
-                    rp.neighbors.remove(id);
+            for (Door d : rp.getDoors()) {
+                if (rp.neighbors.get(d.id) == null) {
+                    rp.neighbors.remove(d.id);
                 }
             }
         }
     }
     
-    private static void sleep(long millis) {
+    private static void sleep(long t) {
         try {
-            Thread.sleep(millis);
+            Thread.sleep(t * DELAY);
         } catch (InterruptedException e) {
 
         }

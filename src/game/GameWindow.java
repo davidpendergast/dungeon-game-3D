@@ -6,6 +6,7 @@ import java.awt.Image;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.util.function.Consumer;
@@ -66,6 +67,10 @@ public class GameWindow {
         frame.addMouseMotionListener(l);
     }
     
+    public void addKeyListener(KeyListener l) {
+        frame.addKeyListener(l);
+    }
+    
     private void addResizeListener() {
         frame.addComponentListener(new ComponentAdapter() {
 
@@ -79,5 +84,7 @@ public class GameWindow {
             
         });
     }
+    
+    
 
 }

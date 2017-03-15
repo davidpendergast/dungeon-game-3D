@@ -10,9 +10,10 @@ import building.WorldFactory.Options;
 
 public class World {
     
-    List<RoomPiece> pieces;
-    List<RoomPiece> ghostPieces;
-    Integer[] bounds = {null, null, null, null};
+    public List<RoomPiece> pieces;
+    public List<RoomPiece> ghostPieces;
+    public Integer[] bounds = {null, null, null, null};
+    public boolean isGenerating = false;
     
     public World() {
         this.pieces = new CopyOnWriteArrayList<RoomPiece>(); // lololol
