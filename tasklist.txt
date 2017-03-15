@@ -1,0 +1,16 @@
+
+#-------------#
+|  New Tasks  |
+#-------------#
+
+	Generation:
+		
+		getAllOrientations shouldn't return dupes
+		
+		clean up floating sections of wall
+		
+		make number of cycles a configurable option
+		
+	Game:
+		
+		Make/figure out the actual game
