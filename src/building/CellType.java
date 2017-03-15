@@ -17,7 +17,9 @@ public enum CellType {
     N_FLOOR(6, "-", Color.ORANGE),
     E_FLOOR(7, "-", Color.PINK),
     W_FLOOR(8, "-", Color.MAGENTA),
-    S_FLOOR(9, "-", Color.BLUE);
+    S_FLOOR(9, "-", Color.BLUE),
+    
+    GHOST(10, "?", Color.LIGHT_GRAY);
     
     public final int id;
     public final String str;

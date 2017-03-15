@@ -35,7 +35,17 @@ public class DebugWorldDrawer implements WorldDrawer{
                         || y == world.bounds[2] || y == world.bounds[3]) {
                     g.setColor(Color.RED);
                 } else {
-                    g.setColor(world.getSpecialCellType(x, y).color);
+                    CellType t = world.getSpecialCellType(x, y);
+                    RoomPiece rp = world.getPieceAt(x, y);
+                    if (rp != null && (rp.flipped && world.getCellType(x, y) == CellType.FLOOR)) {
+                        g.setColor(new Color(
+                                255 - t.color.getRed(), 
+                                255 - t.color.getGreen(), 
+                                255 - t.color.getBlue()));
+                        
+                    } else {
+                        g.setColor(t.color);
+                    }
                 }
                 g.fillRect(x*cellSize - camera.x, y*cellSize - camera.y, cellSize, cellSize);
             }

@@ -32,7 +32,7 @@ public class _Launcher {
         World w = new World();
         WorldDrawer drawer = new DebugWorldDrawer(w);
                 
-        GameWindow window = new GameWindow(640, 480);
+        GameWindow window = new GameWindow(850, 640);
         
         final Point[] lastDrag = {null};
         window.addMouseMotionListener(new MouseMotionAdapter() {

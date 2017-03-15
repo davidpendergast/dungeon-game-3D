@@ -10,10 +10,12 @@ import building.RoomPiece.Door;
 public class World {
     
     List<RoomPiece> pieces;
+    List<RoomPiece> ghostPieces;
     Integer[] bounds = {null, null, null, null};
     
     public World() {
         this.pieces = new CopyOnWriteArrayList<RoomPiece>(); // lololol
+        this.ghostPieces = new CopyOnWriteArrayList<RoomPiece>();
     }
     
     public RoomPiece getPieceAt(int x, int y) {
@@ -27,6 +29,15 @@ public class World {
     
     public RoomPiece getPieceAt(Point p) {
         return getPieceAt(p.x, p.y);
+    }
+    
+    public RoomPiece getGhostAt(int x, int y) {
+        for (RoomPiece ghost : ghostPieces) {
+            if (ghost.get(x, y) != CellType.EMPTY) {
+                return ghost;
+            }
+        }
+        return null;
     }
     
     public CellType getCellType(int x, int y) {
@@ -43,6 +54,10 @@ public class World {
     }
     
     public CellType getSpecialCellType(int x, int y) {
+        RoomPiece ghost = getGhostAt(x,y);
+        if (ghost != null) {
+            return CellType.GHOST;
+        }
         RoomPiece rp = getPieceAt(x,y);
         if (rp != null) {
             return rp.getSpecial(x,y);

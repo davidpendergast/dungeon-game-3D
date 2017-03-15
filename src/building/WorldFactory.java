@@ -63,20 +63,18 @@ public class WorldFactory {
                 Collections.shuffle(pieceDoors, opts.rand);
                 for (Door d : pieceDoors) {
                     alignDoors(targetDoor, d, piece);
-                    
+                    w.ghostPieces.add(piece);
+                    sleep(100);
+                    w.ghostPieces.remove(piece);
                     if (!w.collides(piece) && !outOfBounds(piece, opts)) {
                         // it fits!
-                        System.out.println(piece);
+                        //System.out.println(piece);
                         w.add(piece);
                         
                         piece.addNieghbor(targetDoor.roomPiece, d.id);
                         targetDoor.roomPiece.addNieghbor(piece, targetDoor.id);
 
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException e) {
-             
-                        }
+                        sleep(500);
                         continue doorLoop;
                     }
                 }
@@ -87,6 +85,14 @@ public class WorldFactory {
         }
         
         return w;
+    }
+    
+    private static void sleep(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+
+        }
     }
     
     private static <T> T choose(List<T> list, Random rand) {

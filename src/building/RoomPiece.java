@@ -99,18 +99,18 @@ public class RoomPiece {
     }
     
     public int width() {
-        if (rot ==  NORTH || rot == SOUTH) {
-            return template.width();
-        } else {
+        if (rot ==  EAST || rot == WEST) {
             return template.height();
+        } else {
+            return template.width();
         }
     }
     
     public int height() {
-        if (rot == NORTH || rot == SOUTH) {
-            return template.height();
-        } else {
+        if (rot ==  EAST || rot == WEST) {
             return template.width();
+        } else {
+            return template.height();
         }
     }
     
@@ -163,45 +163,41 @@ public class RoomPiece {
     }
     
     public Point worldToTemplate(Point p) {
-        p = new Point(p.x - pos.x, p.y - pos.y);
-        if (flipped) {
-            p = new Point(p.y, p.x);
-        }
+        Point res = new Point(p.x - pos.x, p.y - pos.y);
         switch(rot) {
-            case NORTH:
-                return p;
             case EAST:
-                return new Point(p.y, width() - p.x - 1);
-            case WEST:
-                return new Point(height() - p.y - 1, p.x);
-            case SOUTH:
-                return new Point(width() - p.x - 1, height() - p.y - 1);
-            default:
-                throw new RuntimeException("strange new direction encountered...");
-        }
-    }
-    
-    public Point templateToWorld(Point p) {
-        Point res;
-        switch(rot) {
-            case NORTH:
-                res = p;
-                break;
-            case EAST:
-                res = new Point(template.height() - p.y - 1, p.x);
+                res = new Point(res.y, width() - res.x - 1);
                 break;
             case WEST:
-                res = new Point(p.y, template.width() - p.x - 1);
+                res = new Point(height() - res.y - 1, res.x);
                 break;
             case SOUTH:
-                res = new Point(template.width() - p.x - 1, template.height() - p.y - 1);
+                res = new Point(width() - res.x - 1, height() - res.y - 1);
                 break;
-            default:
-                throw new RuntimeException("strange new direction encountered...");
         }
         
         if (flipped) {
-            res = new Point(res.y, res.x);
+            res = new Point(template.width() - res.x - 1, res.y);
+        }
+        
+        return res;
+    }
+    
+    public Point templateToWorld(Point p) {
+        Point res = p;
+        if (flipped) {
+            res = new Point(template.width() - res.x - 1, res.y);
+        }
+        switch(rot) {
+            case EAST:
+                res = new Point(template.height() - res.y - 1, res.x);
+                break;
+            case WEST:
+                res = new Point(res.y, template.width() - res.x - 1);
+                break;
+            case SOUTH:
+                res = new Point(template.width() - res.x - 1, template.height() - res.y - 1);
+                break;
         }
         
         return new Point(res.x + pos.x, res.y + pos.y);
@@ -242,6 +238,11 @@ public class RoomPiece {
         DoorTemplate d = template.getDoor(i);
         Point left = templateToWorld(d.left);
         Point right = templateToWorld(d.right);
+        if (flipped) {
+            Point temp = left;
+            left = right;
+            right = temp;
+        }
         return new Point[] {left, right};
     }
     
@@ -349,8 +350,8 @@ public class RoomPiece {
     public static List<RoomPiece> allOrientations(RoomPieceTemplate template) {
         List<RoomPiece> res = new ArrayList<RoomPiece>();
         
-        //for (boolean flip : new boolean[] {false, true}) {
-        for (boolean flip : new boolean[] {false}) {
+        for (boolean flip : new boolean[] {false, true}) {
+        //for (boolean flip : new boolean[] {false}) {
             for (Direction dir : Direction.values()) {
                 RoomPiece rp = new RoomPiece(template);
                 rp.setFlipped(flip);
