@@ -13,11 +13,11 @@ public enum CellType {
     // "Special" cell types, used for rendering purposes
     WALLED_DOOR(4, "?", Color.DARK_GRAY),
     LINKED_DOOR(5, "=", Color.CYAN),
-    
-    N_FLOOR(6, "-", Color.ORANGE),
-    E_FLOOR(7, "-", Color.PINK),
-    W_FLOOR(8, "-", Color.MAGENTA),
-    S_FLOOR(9, "-", Color.BLUE),
+    CONNECTOR_FLOOR(6, "+", Color.ORANGE),
+//    N_FLOOR(6, "-", Color.ORANGE),
+//    E_FLOOR(7, "-", Color.PINK),
+//    W_FLOOR(8, "-", Color.MAGENTA),
+//    S_FLOOR(9, "-", Color.BLUE),
     
     GHOST(10, "?", Color.LIGHT_GRAY);
     

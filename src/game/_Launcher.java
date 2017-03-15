@@ -9,6 +9,7 @@ import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseMotionListener;
 import java.util.Collections;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 import building.DebugWorldDrawer;
 import building.RoomPiece;
@@ -26,7 +27,10 @@ public class _Launcher {
         int rSeed = (int)(Math.random()*100);
         System.out.println("rSeed = "+rSeed);
         opts.rand = new Random(rSeed);
-        opts.templates = TemplateLoader.templates;
+        opts.templates = TemplateLoader.templates.stream() // wat r u doin
+                .filter(x -> !x.isConnector()).collect(Collectors.toList());
+        opts.connectors = TemplateLoader.templates.stream()
+                .filter(x -> x.isConnector()).collect(Collectors.toList());
         opts.maxHeight = 60;
         opts.maxWidth = 100;
         World w = new World();

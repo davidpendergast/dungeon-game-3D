@@ -16,6 +16,7 @@ public class WorldFactory {
     
     public static class Options {
         public List<RoomPieceTemplate> templates = null;
+        public List<RoomPieceTemplate> connectors = null;
         public int size = 10;
         public Random rand = new Random();
         public Integer maxWidth = 30;
@@ -66,25 +67,33 @@ public class WorldFactory {
                     w.ghostPieces.add(piece);
                     sleep(100);
                     w.ghostPieces.remove(piece);
-                    if (!w.collides(piece) && !outOfBounds(piece, opts)) {
-                        // it fits!
-                        //System.out.println(piece);
+                    if (!w.collides(piece) && !w.outOfBounds(piece)) {
                         w.add(piece);
-                        
-                        piece.addNieghbor(targetDoor.roomPiece, d.id);
-                        targetDoor.roomPiece.addNieghbor(piece, targetDoor.id);
 
                         sleep(500);
                         continue doorLoop;
                     }
                 }
-                
             }
-            // couldn't make it fit
-            targetDoor.roomPiece.addNieghbor(null, targetDoor.id);
+            // couldn't make it fit, wall off the door
+            targetDoor.roomPiece.addNeighbor(null, targetDoor.id);
         }
         
         return w;
+    }
+    
+    private static void placeConnectors(Options opts, World w) {
+        clearWalledOffDoors(w);
+    }
+    
+    private static void clearWalledOffDoors(World w) {
+        for (RoomPiece rp : w.pieces) {
+            for (int id : rp.neighbors.keySet()) {
+                if (rp.neighbors.get(id) == null) {
+                    rp.neighbors.remove(id);
+                }
+            }
+        }
     }
     
     private static void sleep(long millis) {
@@ -108,24 +117,6 @@ public class WorldFactory {
         // we want to shift d2 onto d1
         
         rp.shiftPosition(PointUtils.subtract(door1.left(), door2.right()));
-    }
-    
-    private static boolean outOfBounds(RoomPiece rp, Options opts) {
-        Integer width = opts.maxWidth;
-        if (width != null) {
-            if (rp.pos.x < 0 || rp.pos.x + rp.width() > width) {
-                return true;
-            }
-        }
-        
-        Integer height = opts.maxHeight;
-        if (height != null) {
-            if (rp.pos.y < 0 || rp.pos.y + rp.height() > height) {
-                return true;
-            }
-        }
-        
-        return false;
     }
     
     private static void setBounds(World w, Options opts) {

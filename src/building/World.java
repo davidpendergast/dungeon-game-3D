@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import building.RoomPiece.Door;
+import building.WorldFactory.Options;
 
 public class World {
     
@@ -71,10 +72,17 @@ public class World {
     }
     
     public boolean add(RoomPiece piece) {
-        if (collides(piece)) {
+        if (collides(piece) || outOfBounds(piece)) {
             return false;
         } else {
             pieces.add(piece);
+            for (Door door : piece.getDoors()) {
+                Door connectingDoor = doorThatConnectsTo(door);
+                if (connectingDoor != null) {
+                    piece.addNeighbor(connectingDoor.roomPiece, door.id);
+                    connectingDoor.roomPiece.addNeighbor(piece, connectingDoor.id);
+                }
+            }
             return true;
         }
     }
@@ -96,6 +104,39 @@ public class World {
             result.addAll(piece.getAvailableDoors());
         }
         return result;
+    }
+    
+    public Door doorThatConnectsTo(Door d) {
+        // could be more efficient but ehhh...
+        for (RoomPiece rp : pieces) {
+            for (Door rpDoor : rp.getDoors()) {
+                if (d.isCompatible(rpDoor) && d.left().equals(rpDoor.right())) {
+                    return rpDoor;
+                }
+            }
+        }
+        
+        return null;
+    }
+    
+    public boolean outOfBounds(RoomPiece rp) {
+        if (bounds[0] != null && rp.pos.x < bounds[0]) {
+            return true;
+        }
+        
+        if (bounds[1] != null && rp.pos.x + rp.width() > bounds[1]) {
+            return true;
+        }
+        
+        if (bounds[2] != null && rp.pos.y < bounds[2]) {
+            return true;
+        }
+        
+        if (bounds[3] != null && rp.pos.y + rp.height() > bounds[3]) {
+            return true;
+        }
+        
+        return false;
     }
 
 }

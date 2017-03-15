@@ -36,15 +36,17 @@ public class RoomPiece {
         this.neighbors = new HashMap<Integer, RoomPiece>();
     }
     
-    public void addNieghbor(RoomPiece other, int door) {
+    public void addNeighbor(RoomPiece other, int door) {
         if (neighbors.containsKey(door)) {
-            //throw new IllegalArgumentException("There's already a neighbor at" + 
-            //        "door " + door);
             System.out.println("There's already a neighbor at" + 
                     " door " + door);
         } else {
             neighbors.put(door, other);
         }
+    }
+    
+    public boolean isConnector() {
+        return template.isConnector();
     }
     
     public void addToWorld(World w) {
@@ -130,16 +132,15 @@ public class RoomPiece {
     public CellType getSpecial(int x, int y) {
         CellType templateType = get(x, y);
         if (templateType == CellType.FLOOR) {
-            switch(getRotation()) {
-                case NORTH: return CellType.N_FLOOR;
-                case EAST: return CellType.E_FLOOR;
-                case WEST: return CellType.W_FLOOR;
-                case SOUTH: return CellType.S_FLOOR;
+            if (isConnector()) {
+                return CellType.CONNECTOR_FLOOR;
+            } else {
+                return templateType;
             }
         } else if (templateType == CellType.DOOR) {
             Door d = getDoor(x, y);
             if (d == null) {
-                return CellType.DOOR; // weird threading issue with Drawer...
+                return CellType.DOOR;
             }
             if (!neighbors.containsKey(d.id)) {
                 return CellType.DOOR;
@@ -151,7 +152,6 @@ public class RoomPiece {
         } else {
             return templateType;
         }
-        return CellType.EMPTY;
     }
     
     public Point centerPoint() {

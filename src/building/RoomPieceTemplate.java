@@ -72,6 +72,10 @@ public class RoomPieceTemplate {
     public int numDoors() {
         return doors.size();
     }
+    
+    public boolean isConnector() {
+        return numDoors() == 2;
+    }
      
     public String toString() {
         StringBuilder sb = new StringBuilder();

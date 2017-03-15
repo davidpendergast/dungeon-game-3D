@@ -36,16 +36,7 @@ public class DebugWorldDrawer implements WorldDrawer{
                     g.setColor(Color.RED);
                 } else {
                     CellType t = world.getSpecialCellType(x, y);
-                    RoomPiece rp = world.getPieceAt(x, y);
-                    if (rp != null && (rp.flipped && world.getCellType(x, y) == CellType.FLOOR)) {
-                        g.setColor(new Color(
-                                255 - t.color.getRed(), 
-                                255 - t.color.getGreen(), 
-                                255 - t.color.getBlue()));
-                        
-                    } else {
-                        g.setColor(t.color);
-                    }
+                    g.setColor(t.color);
                 }
                 g.fillRect(x*cellSize - camera.x, y*cellSize - camera.y, cellSize, cellSize);
             }
@@ -59,12 +50,16 @@ public class DebugWorldDrawer implements WorldDrawer{
         g.setColor(color);
         for (RoomPiece piece : world.pieces) {
             Point center = worldToScreen(piece.centerPoint());
-            g.fillOval(center.x, center.y, cellSize, cellSize);
+            center = PointUtils.add(center, new Point(cellSize/2, cellSize/2));
+            g.fillOval(center.x-cellSize/2, center.y-cellSize/2, cellSize, cellSize);
             for (RoomPiece n : piece.neighbors.values()) {
                 if (n != null) {
                     Point nCenter = worldToScreen(n.centerPoint()); 
                     nCenter = PointUtils.add(nCenter, new Point(cellSize/2, cellSize/2));
                     g.drawLine(center.x, center.y, nCenter.x, nCenter.y); // double draws, i know
+                    g.drawLine(center.x+1, center.y, nCenter.x+1, nCenter.y);
+                    g.drawLine(center.x, center.y+1, nCenter.x, nCenter.y+1);
+                    
                 }
             }
         }
