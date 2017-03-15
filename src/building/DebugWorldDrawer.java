@@ -27,8 +27,8 @@ public class DebugWorldDrawer implements WorldDrawer{
         
         int minX = camera.x / cellSize - 1;
         int minY = camera.y / cellSize - 1;
-        int maxX = minX + w / cellSize + 2;
-        int maxY = minY + h / cellSize + 2;
+        int maxX = minX + w / cellSize + 3;
+        int maxY = minY + h / cellSize + 3;
         for (int x = minX; x < maxX; x++) {
             for (int y = minY; y < maxY; y++) {
                 if (x == world.bounds[0] || x == world.bounds[1] 

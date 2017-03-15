@@ -188,17 +188,18 @@ public class RoomPiece {
                 res = p;
                 break;
             case EAST:
-                res = new Point(height() - p.y - 1, p.x);
+                res = new Point(template.height() - p.y - 1, p.x);
                 break;
             case WEST:
-                res = new Point(p.y, width() - p.x - 1);
+                res = new Point(p.y, template.width() - p.x - 1);
                 break;
             case SOUTH:
-                res = new Point(width() - p.x - 1, height() - p.y - 1);
+                res = new Point(template.width() - p.x - 1, template.height() - p.y - 1);
                 break;
             default:
                 throw new RuntimeException("strange new direction encountered...");
         }
+        
         if (flipped) {
             res = new Point(res.y, res.x);
         }
@@ -207,7 +208,8 @@ public class RoomPiece {
     }
     
     private boolean isValid(int x, int y) {
-        return x >= pos.x && y >= pos.y && x < pos.x + width() && y < pos.y + height();
+        return x >= pos.x && y >= pos.y 
+                && x < pos.x + width() && y < pos.y + height();
     } 
     
     public List<Point> points() {
@@ -336,6 +338,11 @@ public class RoomPiece {
         
         public int hashCode() {
             return Objects.hash(id, roomPiece);
+        }
+        
+        public String toString() {
+            return "Door[left=("+left().x+","+left().y+"), right=("+right().x+
+                    ","+right().y+"), dir="+dir().name()+"]";
         }
     }
     

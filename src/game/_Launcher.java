@@ -27,7 +27,7 @@ public class _Launcher {
         System.out.println("rSeed = "+rSeed);
         opts.rand = new Random(rSeed);
         opts.templates = TemplateLoader.templates;
-        opts.maxHeight = 100;
+        opts.maxHeight = 60;
         opts.maxWidth = 100;
         World w = new World();
         WorldDrawer drawer = new DebugWorldDrawer(w);
