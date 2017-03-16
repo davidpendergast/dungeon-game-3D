@@ -15,7 +15,7 @@ import building.RoomPieceTemplate.DoorTemplate;
 public class WorldFactory {
     public static class Options {
         public List<RoomPieceTemplate> templates = null;
-        public List<RoomPieceTemplate> connectors = null;
+        public List<RoomPieceTemplate> connectors = new ArrayList<RoomPieceTemplate>();
         public int size = 10;
         public Random rand = new Random();
         public Integer maxWidth = 30;

@@ -18,24 +18,32 @@ import building.WorldFactory.Options;
 import io.TemplateLoader;
 
 public class _Launcher {
-    public static void main(String[] args) {
-        TemplateLoader.init();
-        Options opts = new Options();
-        opts.size = 400;
+    
+    public static Options buildOptions() {
         int rSeed = (int)(Math.random()*100);
         System.out.println("rSeed = "+rSeed);
+        
+        Options opts = new Options();
+        opts.size = 400;
         opts.rand = new Random(rSeed);
         opts.templates = TemplateLoader.templates.stream() // wat r u doin
                 .filter(x -> !x.isConnector()).collect(Collectors.toList());
         opts.connectors = TemplateLoader.templates.stream()
                 .filter(x -> x.isConnector()).collect(Collectors.toList());
-        opts.maxWidth = 150;
-        opts.maxHeight = 100;
+        opts.maxWidth = 100;
+        opts.maxHeight = 75;
         opts.animationDelay = 0;
+        
+        return opts;
+    }
+    
+    public static void main(String[] args) {
+        TemplateLoader.init();
+        
         World w = new World();
         WorldDrawer drawer = new DebugWorldDrawer();
         drawer.setWorld(w);
-                
+        Options opts = buildOptions();
         GameWindow window = new GameWindow((opts.maxWidth+3)*8, (opts.maxHeight+5)*8);
         
         final Point[] lastDrag = {null};
@@ -78,7 +86,7 @@ public class _Launcher {
                     case KeyEvent.VK_ENTER:
                         World w = new World();
                         drawer.setWorld(w);
-                        generateInNewThread(opts, w);
+                        generateInNewThread(buildOptions(), w);
                 }
                 
             }
