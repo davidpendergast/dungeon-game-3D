@@ -78,7 +78,7 @@ public class WorldFactory {
                 }
             }
             // couldn't make it fit, wall off the door
-            targetDoor.roomPiece.addNeighbor(null, targetDoor.id);
+            targetDoor.roomPiece.setWalledOff(targetDoor, true);
         }
         
         placeConnectors(opts, w);
@@ -99,7 +99,7 @@ public class WorldFactory {
         // lol this is murder
         doorLoop:
         for (Door start : unmatchedDoors) {
-            if (start.roomPiece.neighbors.containsKey(start.id)) {
+            if (start.getNeighbor() != null || start.isWalledOff()) {
                 // door is already matched
                 continue;
             }
@@ -128,7 +128,7 @@ public class WorldFactory {
             }
             
             // no connector found...
-            start.roomPiece.addNeighbor(null, start.id);
+            start.roomPiece.setWalledOff(start, true);
         }
         
     }
@@ -136,8 +136,8 @@ public class WorldFactory {
     private static void clearWalledOffDoors(World w) {
         for (RoomPiece rp : w.pieces) {
             for (Door d : rp.getDoors()) {
-                if (rp.neighbors.get(d.id) == null) {
-                    rp.neighbors.remove(d.id);
+                if (rp.getNeighbor(d) == null) {
+                    rp.removeNeighbor(d);
                 }
             }
         }

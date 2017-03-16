@@ -29,9 +29,9 @@ public class _Launcher {
                 .filter(x -> !x.isConnector()).collect(Collectors.toList());
         opts.connectors = TemplateLoader.templates.stream()
                 .filter(x -> x.isConnector()).collect(Collectors.toList());
-        opts.maxWidth = 100;
-        opts.maxHeight = 60;
-        opts.animationDelay = 1;
+        opts.maxWidth = 150;
+        opts.maxHeight = 100;
+        opts.animationDelay = 0;
         World w = new World();
         WorldDrawer drawer = new DebugWorldDrawer();
         drawer.setWorld(w);

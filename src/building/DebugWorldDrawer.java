@@ -11,15 +11,20 @@ import game.GlobalSettings;
 public class DebugWorldDrawer implements WorldDrawer{
     private Point cameraXY = new Point(0,0);
     private int cellSize = 8;
-    private World world;
+    private World world = null;
+    private World newWorld = null; // jank threading bandaid
     
     public synchronized void setWorld(World w) {
-        this.world = w;
+        this.newWorld = w;
         this.cameraXY = new Point(0,0);
         this.cellSize = 8;
     }
     
     public synchronized void draw(Image canvas) {
+        if (newWorld != null) {
+            world = newWorld;
+            newWorld = null;
+        }
         if (canvas == null || world == null) {
             return;
         }
@@ -68,7 +73,7 @@ public class DebugWorldDrawer implements WorldDrawer{
             center = PointUtils.add(center, new Point(cellSize/2, cellSize/2));
             g.fillOval(center.x-cellSize/2, center.y-cellSize/2, cellSize, cellSize);
             try {
-                for (RoomPiece n : piece.neighbors.values()) {
+                for (RoomPiece n : piece.getNeighbors()) {
                     if (n != null) {
                         Point nCenter = worldToScreen(n.centerPoint()); 
                         nCenter = PointUtils.add(nCenter, new Point(cellSize/2, cellSize/2));

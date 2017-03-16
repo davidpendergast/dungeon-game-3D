@@ -80,8 +80,8 @@ public class World {
             for (Door door : piece.getDoors()) {
                 Door connectingDoor = doorThatConnectsTo(door);
                 if (connectingDoor != null) {
-                    piece.addNeighbor(connectingDoor.roomPiece, door.id);
-                    connectingDoor.roomPiece.addNeighbor(piece, connectingDoor.id);
+                    piece.setNeighbor(door, connectingDoor.roomPiece);
+                    connectingDoor.roomPiece.setNeighbor(connectingDoor, piece);
                 }
             }
             return true;

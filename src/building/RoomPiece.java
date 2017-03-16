@@ -26,7 +26,8 @@ public class RoomPiece {
      * Rooms whose doors are connected to this one.
      * Door id -> RoomPiece
      */
-    public Map<Integer, RoomPiece> neighbors;
+    private Map<Integer, RoomPiece> neighbors;
+    private Object neighborLock = new Object();
     
     public RoomPiece(RoomPieceTemplate template) {
         this.template = template;
@@ -36,12 +37,62 @@ public class RoomPiece {
         this.neighbors = new HashMap<Integer, RoomPiece>();
     }
     
-    public void addNeighbor(RoomPiece other, int door) {
-        if (neighbors.containsKey(door) && neighbors.get(door) != null) {
-            System.out.println("There's already a neighbor at" + 
-                    " door " + door);
+    public void setNeighbor(Door door, RoomPiece other) {
+        synchronized (neighborLock) {
+            if (other == null) {
+                neighbors.remove(door.id);
+            } else {
+                neighbors.put(door.id, other);
+            }
         }
-        neighbors.put(door, other);
+    }
+    
+    public List<RoomPiece> getNeighbors() {
+        synchronized (neighborLock) {
+            List<RoomPiece> result = new ArrayList<RoomPiece>();
+            for (RoomPiece neigh : neighbors.values()) {
+                if (neigh != null && !result.contains(neigh)) { // O(n^2) but ehh
+                    result.add(neigh);
+                }
+            }
+            return result;
+        }
+    }
+    
+    public RoomPiece getNeighbor(Door d) {
+        assert d.roomPiece == this;
+        synchronized (neighborLock) {
+            return neighbors.get(d.id);
+        }
+    }
+    
+    public boolean isWalledOff(Door d) {
+        assert d.roomPiece == this;
+        synchronized (neighborLock) {
+            return neighbors.containsKey(d.id) && neighbors.get(d.id) == null;
+        }
+    }
+    
+    public void setWalledOff(Door d, boolean walledOff) {
+        assert d.roomPiece == this;
+        synchronized (neighborLock) {
+            if (walledOff) {
+                neighbors.put(d.id, null);
+            } else {
+                neighbors.remove(d.id);
+            }
+        }
+    }
+    
+    public void removeNeighbor(Door d) {
+        assert d.roomPiece == this;
+        synchronized (neighborLock) { 
+            neighbors.remove(d.id);
+        }
+    }
+    
+    public boolean isLeaf() {
+        return getNeighbors().size() == 1;
     }
     
     public boolean isConnector() {
@@ -131,30 +182,23 @@ public class RoomPiece {
     public CellType getSpecial(int x, int y) {
         CellType templateType = get(x, y);
         if (templateType == CellType.FLOOR) {
-//            if (isConnector()) {
-//                return CellType.CONNECTOR_FLOOR;
-//            } else {
-//                return templateType;
-//            }
-//             else 
-            if (template.isMirrored && (x + y) % 2 == 0) {
+            if (isLeaf()) {
                 return CellType.PINK;
             }
-            if (template.is90Symmetric) {
-                return CellType.BLUE;
-            } else if (template.is180Symmetric) {
-                return CellType.MAGENTA;
-            }
+            if (isConnector()) {
+                return CellType.CONNECTOR_FLOOR;
+            } 
+
             return templateType;
         } else if (templateType == CellType.DOOR) {
             Door d = getDoor(x, y);
             if (d == null) {
-                return CellType.DOOR;
+                return CellType.DOOR; // uhhh
             }
-            if (!neighbors.containsKey(d.id)) {
-                return CellType.DOOR;
-            } else if (neighbors.get(d.id) == null) {
+            if (d.isWalledOff()) {
                 return CellType.WALLED_DOOR;
+            } else if (d.isAvailable()) {
+                return CellType.DOOR;
             } else {
                 return CellType.LINKED_DOOR;
             }
@@ -293,7 +337,7 @@ public class RoomPiece {
     
     public List<Door> getAvailableDoors() {
         return getDoors().stream()
-                .filter(door -> !neighbors.containsKey(door.id))
+                .filter(door -> door.isAvailable())
                 .collect(Collectors.toList());
         
     }
@@ -312,6 +356,10 @@ public class RoomPiece {
     }
     
     public String toString() {
+        return "RoomPiece[w="+width()+",h="+height()+",dir="+getRotation().name()+"]";
+    }
+    
+    public String toDisplayString() {
         StringBuilder sb = new StringBuilder();
         for (int y = 0; y < height(); y++) {
             for (int x = 0; x < width(); x++) {
@@ -360,6 +408,18 @@ public class RoomPiece {
             } else {
                 return false;
             }
+        }
+        
+        public RoomPiece getNeighbor() {
+            return roomPiece.getNeighbor(this);
+        }
+        
+        public boolean isWalledOff() {
+            return roomPiece.isWalledOff(this);
+        }
+        
+        public boolean isAvailable() {
+            return getNeighbor() == null && !isWalledOff();
         }
         
         public int hashCode() {

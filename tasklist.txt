@@ -32,6 +32,10 @@
                 locked doors
                     - needs to separate 1-connected areas from main path
                 nonexistant doors
+                
+        make things more efficient
+            stop cycling through all room pieces whenever possible
+            just hash the room pieces at each cell.
         
     Game:
         
