@@ -14,6 +14,10 @@ public enum CellType {
     WALLED_DOOR(4, "?", Color.DARK_GRAY),
     LINKED_DOOR(5, "=", Color.CYAN),
     CONNECTOR_FLOOR(6, "+", Color.ORANGE),
+    
+    PINK(7, "?", Color.PINK),
+    MAGENTA(7, "?", Color.MAGENTA),
+    BLUE(7, "?", Color.BLUE),
 //    N_FLOOR(6, "-", Color.ORANGE),
 //    E_FLOOR(7, "-", Color.PINK),
 //    W_FLOOR(8, "-", Color.MAGENTA),

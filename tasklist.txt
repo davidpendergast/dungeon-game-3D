@@ -3,14 +3,42 @@
 |  New Tasks  |
 #-------------#
 
-	Generation:
-		
-		getAllOrientations shouldn't return dupes
-		
-		clean up floating sections of wall
-		
-		make number of cycles a configurable option
-		
-	Game:
-		
-		Make/figure out the actual game
+    Generation:
+        
+       clean up floating sections of wall
+            -should go like this:
+                if wall section is only touching doors
+                    delete walls and those doors
+                    merge affected rooms together
+                    
+        make mechanism for merging rooms
+        
+        make number of cycles a configurable option
+        
+        decide what other generation stuff should be included
+            entrance/exit
+                - could just be a tile embedded in the wall somewhere
+                - defines a "main path"
+            theme zones?
+                - make rooms more interesting by having different enemies, 
+                  loot, tiles, etc.
+            spawn points for good/bad stuff
+            rivers/natural phenomena?
+            cave systems that connects with dungeon?
+                - could just make certain rooms be "cave rooms"
+                - or could do some cell-automata digging to make them
+            different types of doors
+                hidden doors
+                locked doors
+                    - needs to separate 1-connected areas from main path
+                nonexistant doors
+        
+    Game:
+        
+        figure out the actual game
+        
+        
+#-------------#
+|  Completed  |
+#-------------#
+    getAllOrientations shouldn't return dupes

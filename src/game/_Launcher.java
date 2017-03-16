@@ -31,6 +31,7 @@ public class _Launcher {
                 .filter(x -> x.isConnector()).collect(Collectors.toList());
         opts.maxWidth = 100;
         opts.maxHeight = 60;
+        opts.animationDelay = 1;
         World w = new World();
         WorldDrawer drawer = new DebugWorldDrawer();
         drawer.setWorld(w);

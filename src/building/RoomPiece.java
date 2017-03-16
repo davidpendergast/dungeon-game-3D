@@ -37,12 +37,11 @@ public class RoomPiece {
     }
     
     public void addNeighbor(RoomPiece other, int door) {
-        if (neighbors.containsKey(door)) {
+        if (neighbors.containsKey(door) && neighbors.get(door) != null) {
             System.out.println("There's already a neighbor at" + 
                     " door " + door);
-        } else {
-            neighbors.put(door, other);
         }
+        neighbors.put(door, other);
     }
     
     public boolean isConnector() {
@@ -132,11 +131,21 @@ public class RoomPiece {
     public CellType getSpecial(int x, int y) {
         CellType templateType = get(x, y);
         if (templateType == CellType.FLOOR) {
-            if (isConnector()) {
-                return CellType.CONNECTOR_FLOOR;
-            } else {
-                return templateType;
+//            if (isConnector()) {
+//                return CellType.CONNECTOR_FLOOR;
+//            } else {
+//                return templateType;
+//            }
+//             else 
+            if (template.isMirrored && (x + y) % 2 == 0) {
+                return CellType.PINK;
             }
+            if (template.is90Symmetric) {
+                return CellType.BLUE;
+            } else if (template.is180Symmetric) {
+                return CellType.MAGENTA;
+            }
+            return templateType;
         } else if (templateType == CellType.DOOR) {
             Door d = getDoor(x, y);
             if (d == null) {
@@ -218,6 +227,22 @@ public class RoomPiece {
             }
         }
         return result;
+    }
+    
+    public boolean sameAs(RoomPiece other) {
+        if (this.width() != other.width() || this.height() != other.height()) {
+            return false;
+        } else {
+            for (int x = 0; x < width(); x++) {
+                for (int y = 0; y < height(); y++) {
+                    if (get(x,y) != other.get(x, y)) {
+                        return false;
+                    }
+                }
+            }
+            
+            return true;
+        }
     }
     
     public boolean collides(RoomPiece other) {
@@ -348,18 +373,29 @@ public class RoomPiece {
     }
     
     public static List<RoomPiece> allOrientations(RoomPieceTemplate template) {
-        List<RoomPiece> res = new ArrayList<RoomPiece>();
+        boolean[] flips = template.isMirrored ? new boolean[] {false} : new boolean[] {false, true};
+        List<Direction> directions = new ArrayList<Direction>();
+        directions.add(Direction.NORTH);
+        if (!template.is90Symmetric) {
+            directions.add(Direction.EAST);
+            if (!template.is180Symmetric) {
+                directions.add(Direction.WEST);
+                directions.add(Direction.SOUTH);
+            }
+        } else if (!template.is180Symmetric) {
+            directions.add(Direction.SOUTH);
+        }
         
-        for (boolean flip : new boolean[] {false, true}) {
-        //for (boolean flip : new boolean[] {false}) {
-            for (Direction dir : Direction.values()) {
+        List<RoomPiece> res = new ArrayList<RoomPiece>();
+        for (boolean flip : flips) {
+            for (Direction dir : directions) {
                 RoomPiece rp = new RoomPiece(template);
                 rp.setFlipped(flip);
                 rp.setRotation(dir);
                 res.add(rp);
             }
         }
-        assert res.size() == 4;
+        
         return res;
     }
 }

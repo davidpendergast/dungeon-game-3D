@@ -18,11 +18,18 @@ import java.util.stream.Collectors;
 
 public class RoomPieceTemplate {
     private final int[][] grid;
-    private final List<DoorTemplate> doors;
+    public final List<DoorTemplate> doors;
+    
+    public final boolean isMirrored;
+    public final boolean is90Symmetric;
+    public final boolean is180Symmetric;
     
     public RoomPieceTemplate(int[][] grid) {
         this.grid = grid;
         this.doors = Collections.unmodifiableList(computeDoors());
+        this.isMirrored = isMirrored(this);
+        this.is90Symmetric = is90Symmetric(this);
+        this.is180Symmetric = is90Symmetric || is180Symmetric(this);
     }
     
     public int width() {
@@ -86,6 +93,33 @@ public class RoomPieceTemplate {
             sb.append("\n");
         }
         return sb.toString();
+    }
+    
+    private static boolean isMirrored(RoomPieceTemplate rpt) {
+        RoomPiece base = new RoomPiece(rpt);
+        RoomPiece flipped = new RoomPiece(rpt);
+        flipped.setFlipped(true);
+        for (Direction dir : Direction.values()) {
+            flipped.setRotation(dir);
+            if (base.sameAs(flipped)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public static boolean is90Symmetric(RoomPieceTemplate rpt) {
+        RoomPiece base = new RoomPiece(rpt);
+        RoomPiece rotated = new RoomPiece(rpt);
+        rotated.setRotation(Direction.EAST);
+        return base.sameAs(rotated);
+    }
+    
+    public static boolean is180Symmetric(RoomPieceTemplate rpt) {
+        RoomPiece base = new RoomPiece(rpt);
+        RoomPiece rotated = new RoomPiece(rpt);
+        rotated.setRotation(Direction.SOUTH);
+        return base.sameAs(rotated);
     }
     
     public static class DoorTemplate {

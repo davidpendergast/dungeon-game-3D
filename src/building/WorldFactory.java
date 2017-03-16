@@ -13,9 +13,6 @@ import building.RoomPiece.Door;
 import building.RoomPieceTemplate.DoorTemplate;
 
 public class WorldFactory {
-    
-    private static final int DELAY = 50;
-    
     public static class Options {
         public List<RoomPieceTemplate> templates = null;
         public List<RoomPieceTemplate> connectors = null;
@@ -23,6 +20,7 @@ public class WorldFactory {
         public Random rand = new Random();
         public Integer maxWidth = 30;
         public Integer maxHeight = 30;
+        public int animationDelay = 50;
     }
     
     public static World generate(Options opts) {
@@ -69,12 +67,12 @@ public class WorldFactory {
                 for (Door d : pieceDoors) {
                     alignDoors(targetDoor, d, piece);
                     w.ghostPieces.add(piece);
-                    sleep(1);
+                    sleep(1 * opts.animationDelay);
                     w.ghostPieces.remove(piece);
                     if (!w.collides(piece) && !w.outOfBounds(piece)) {
                         w.add(piece);
 
-                        sleep(5);
+                        sleep(5 * opts.animationDelay);
                         continue doorLoop;
                     }
                 }
@@ -114,13 +112,15 @@ public class WorldFactory {
                     for (int i = 0; i < 2; i++) {
                         Door d1 = connectorDoors.get(i);
                         Door d2 = connectorDoors.get((i+1) % 2);
-                        alignDoors(start, d1, connector);
-                        
-                        if (w.doorThatConnectsTo(d2) != null) {
-                            // holy crap it connects
-                            // i just hope it doesn't collide...
-                            if (w.add(connector)) {
-                                continue doorLoop;
+                        if (start.isCompatible(d1)) {
+                            alignDoors(start, d1, connector);
+                            
+                            if (w.doorThatConnectsTo(d2) != null) {
+                                // holy crap it connects
+                                // i just hope it doesn't collide...
+                                if (w.add(connector)) {
+                                    continue doorLoop;
+                                }
                             }
                         }
                     }
@@ -144,10 +144,12 @@ public class WorldFactory {
     }
     
     private static void sleep(long t) {
-        try {
-            Thread.sleep(t * DELAY);
-        } catch (InterruptedException e) {
-
+        if (t <= 0) {
+            return;
+        } else {
+            try {
+                Thread.sleep(t);
+            } catch (InterruptedException e) { }
         }
     }
     
