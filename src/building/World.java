@@ -2,7 +2,10 @@ package building;
 
 import java.awt.Point;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import building.RoomPiece.Door;
@@ -12,6 +15,7 @@ public class World {
     
     public List<RoomPiece> pieces;
     public List<RoomPiece> ghostPieces;
+    public Map<Point, CellType> overwrittenCells = new HashMap<Point,CellType>();
     public Integer[] bounds = {null, null, null, null};
     public boolean isGenerating = false;
     
@@ -43,6 +47,10 @@ public class World {
     }
     
     public CellType getCellType(int x, int y) {
+        Point p = new Point(x,y);
+        if (overwrittenCells.containsKey(p)) {
+            return overwrittenCells.get(p);
+        }
         RoomPiece rp = getPieceAt(x,y);
         if (rp != null) {
             return rp.get(x,y);
@@ -55,7 +63,30 @@ public class World {
         return getCellType(p.x, p.y);
     }
     
+    
+    public List<CellType> adjacentCellTypes(int x, int y) {
+        return Arrays.asList(getCellType(x-1, y), getCellType(x+1, y),
+                getCellType(x, y-1), getCellType(x, y+1));
+    }
+    
+    public List<CellType> adjacentCellTypes(Point p) {
+        return adjacentCellTypes(p.x, p.y);
+    }
+    
+    public List<CellType> adjacentSpecialCellTypes(int x, int y) {
+        return Arrays.asList(getSpecialCellType(x-1, y), getSpecialCellType(x+1, y),
+                getSpecialCellType(x, y-1), getSpecialCellType(x, y+1));
+    }
+    
+    public List<CellType> adjacentSpecialCellTypes(Point p) {
+        return adjacentSpecialCellTypes(p);
+    }
+    
     public CellType getSpecialCellType(int x, int y) {
+        Point p = new Point(x,y);
+        if (overwrittenCells.containsKey(p)) {
+            return overwrittenCells.get(p);
+        }
         RoomPiece ghost = getGhostAt(x,y);
         if (ghost != null) {
             return CellType.GHOST;
@@ -70,6 +101,14 @@ public class World {
     
     public CellType getSpecialCellType(Point p) {
         return getSpecialCellType(p.x, p.y);
+    }
+    
+    public void setCellType(int x, int y, CellType t) {
+        setCellType(new Point(x, y), t);
+    }
+    
+    public void setCellType(Point p, CellType t) {
+        overwrittenCells.put(p, t);
     }
     
     public boolean add(RoomPiece piece) {

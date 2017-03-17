@@ -32,7 +32,7 @@ public class _Launcher {
                 .filter(x -> x.isConnector()).collect(Collectors.toList());
         opts.maxWidth = 100;
         opts.maxHeight = 75;
-        opts.animationDelay = 0;
+        opts.animationDelay = 2;
         
         return opts;
     }
@@ -120,18 +120,5 @@ public class _Launcher {
             System.out.println("Done creating world!");
         }).start();
     }
-    
-//    public static void startDrawing(GameWindow window) {
-//        new Thread(() -> {
-//            while (true) {
-//                try {
-//                    Thread.sleep(10);
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
-//                window.draw();
-//            }
-//        }).start();
-//    }
 }
  

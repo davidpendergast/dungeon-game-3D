@@ -21,6 +21,8 @@ public class WorldFactory {
         public Integer maxWidth = 30;
         public Integer maxHeight = 30;
         public int animationDelay = 50;
+        
+        public double elimIslandsProb = 0.5;
     }
     
     public static World generate(Options opts) {
@@ -33,10 +35,7 @@ public class WorldFactory {
         setBounds(w, opts);
         
         if (w.pieces.isEmpty()) {
-            RoomPiece start = new RoomPiece(choose(opts.templates, opts.rand));
-            start.setPosition(new Point(40,20));
-            start.setRotation(Direction.values()[opts.rand.nextInt(4)]);
-            w.add(start);
+            placeFirstPiece(opts, w);
         }
         
         
@@ -82,9 +81,19 @@ public class WorldFactory {
         }
         
         placeConnectors(opts, w);
+        removeWallIslands(opts, w);
         
         w.isGenerating = false;
         return w;
+    }
+    
+    private static void placeFirstPiece(Options opts, World w) {
+        RoomPiece start = new RoomPiece(choose(opts.templates, opts.rand));
+        int x = (w.bounds[0] != null && w.bounds[1] != null) ? (w.bounds[1] - w.bounds[0]) / 2 : 0;
+        int y = (w.bounds[2] != null && w.bounds[3] != null) ? (w.bounds[3] - w.bounds[2]) / 2 : 0;
+        start.setPosition(new Point(x, y));
+        start.setRotation(Direction.values()[opts.rand.nextInt(4)]);
+        w.add(start);
     }
     
     /**
@@ -138,6 +147,34 @@ public class WorldFactory {
             for (Door d : rp.getDoors()) {
                 if (rp.getNeighbor(d) == null) {
                     rp.removeNeighbor(d);
+                }
+            }
+        }
+    }
+    
+    private static void removeWallIslands(Options opts, World w) {
+        List<Point> worldPoints = new ArrayList<Point>();
+        for (int x = w.bounds[0]; x <= w.bounds[1]; x++) {
+            for (int y = w.bounds[2]; y <= w.bounds[3]; y++) {
+                worldPoints.add(new Point(x, y));
+            }
+        }
+        for (int i = 0; i < worldPoints.size(); i++) {
+            Point p = worldPoints.get(i);
+            if (w.getCellType(p) == CellType.WALL) {
+                List<Point> wallSect = PointUtils.floodRemove(worldPoints, p, 
+                        x -> w.getCellType(x) == CellType.WALL || w.getSpecialCellType(x) == CellType.WALLED_DOOR);
+                if (opts.rand.nextDouble() < opts.elimIslandsProb 
+                        && wallSect.stream().allMatch(x -> !w.adjacentCellTypes(x).contains(CellType.EMPTY))) {
+                    for (Point wall : wallSect) {
+                        w.setCellType(wall, CellType.FLOOR);
+                        List<Point> adjDoors = PointUtils.floodRemove(worldPoints, 
+                                wallSect, x -> w.getSpecialCellType(x) == CellType.LINKED_DOOR);
+                        for (Point doorPoint : adjDoors) {
+                            w.setCellType(doorPoint, CellType.FLOOR);
+                        }
+                    }
+                    sleep(20);
                 }
             }
         }

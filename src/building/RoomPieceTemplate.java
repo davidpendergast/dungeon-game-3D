@@ -184,7 +184,7 @@ public class RoomPieceTemplate {
         List<DoorTemplate> result = new ArrayList<DoorTemplate>();
         while (!doorPoints.isEmpty()) {
             Point seed = doorPoints.iterator().next();
-            List<Point> thisDoor = floodRemove(doorPoints, seed, 
+            List<Point> thisDoor = PointUtils.floodRemove(doorPoints, seed, 
                     p -> get(p) == CellType.DOOR);
             
             DoorTemplate door = getDoor(thisDoor);
@@ -225,37 +225,5 @@ public class RoomPieceTemplate {
         }
     }
     
-    /**
-     * Removes the filter-satisfying points flood-adjacent to a seed point.
-     */
-    private static List<Point> floodRemove(Set<Point> points, Point seed, Predicate<Point> filter) {
-        List<Point> res = new ArrayList<Point>();
-        Queue<Point> q = new LinkedList<Point>();
-        q.add(seed);
-        boolean seedInPoints = points.contains(seed);
-        points.remove(seed);
-        Point p;
-        while (!q.isEmpty()) {
-            p = q.poll();
-            res.add(p);
-            Point[] neighbors = {new Point(p.x-1, p.y), new Point(p.x+1, p.y),
-                    new Point(p.x, p.y-1), new Point(p.x, p.y+1)};
-            for (Point n : neighbors) {
-                if (points.contains(n) && filter.test(n)) {
-                    points.remove(n);
-                    q.add(n);
-                }
-            }
-        }
-        
-        if (!filter.test(seed)) {
-            // if seed isn't part of the flood fill, fix stuff
-            res.remove(seed);
-            if (seedInPoints) {
-                points.add(seed);
-            }
-        }
-        
-        return res;
-    }
+    
 }

@@ -12,19 +12,15 @@ public class DebugWorldDrawer implements WorldDrawer{
     private Point cameraXY = new Point(0,0);
     private int cellSize = 8;
     private World world = null;
-    private World newWorld = null; // jank threading bandaid
     
     public synchronized void setWorld(World w) {
-        this.newWorld = w;
+        this.world = w;
         this.cameraXY = new Point(0,0);
         this.cellSize = 8;
     }
     
     public synchronized void draw(Image canvas) {
-        if (newWorld != null) {
-            world = newWorld;
-            newWorld = null;
-        }
+        World world = this.world;
         if (canvas == null || world == null) {
             return;
         }
@@ -36,15 +32,18 @@ public class DebugWorldDrawer implements WorldDrawer{
         fillBackground(g, w, h);
         
         if (GlobalSettings.showDungeon) {
-            drawWorld(g, w, h);
+            drawWorld(world, g, w, h);
         }
         
         if (GlobalSettings.showGraph) {
-            drawGraph(g);
+            drawGraph(world, g);
         }
     }
     
-    private synchronized void drawWorld(Graphics g, int w, int h) {
+    private synchronized void drawWorld(World world, Graphics g, int w, int h) {
+        if (world == null) {
+            return;
+        }
         Point camera = cameraXY;
         int minX = camera.x / cellSize - 1;
         int minY = camera.y / cellSize - 1;
@@ -65,28 +64,24 @@ public class DebugWorldDrawer implements WorldDrawer{
         }
     }
     
-    private synchronized void drawGraph(Graphics g) {
+    private synchronized void drawGraph(World world, Graphics g) {
         Color color = Color.RED;
         g.setColor(color);
         for (RoomPiece piece : world.pieces) {
             Point center = worldToScreen(piece.centerPoint());
             center = PointUtils.add(center, new Point(cellSize/2, cellSize/2));
             g.fillOval(center.x-cellSize/2, center.y-cellSize/2, cellSize, cellSize);
-            try {
-                for (RoomPiece n : piece.getNeighbors()) {
-                    if (n != null) {
-                        Point nCenter = worldToScreen(n.centerPoint()); 
-                        nCenter = PointUtils.add(nCenter, new Point(cellSize/2, cellSize/2));
-                        g.drawLine(center.x, center.y, nCenter.x, nCenter.y); // double draws, i know
-                        g.drawLine(center.x+1, center.y, nCenter.x+1, nCenter.y);
-                        g.drawLine(center.x, center.y+1, nCenter.x, nCenter.y+1);
-                        g.drawLine(center.x+2, center.y, nCenter.x+2, nCenter.y);
-                        g.drawLine(center.x, center.y+2, nCenter.x, nCenter.y+2);
-                        
-                    }
+            for (RoomPiece n : piece.getNeighbors()) {
+                if (n != null) {
+                    Point nCenter = worldToScreen(n.centerPoint()); 
+                    nCenter = PointUtils.add(nCenter, new Point(cellSize/2, cellSize/2));
+                    g.drawLine(center.x, center.y, nCenter.x, nCenter.y); // double draws, i know
+                    g.drawLine(center.x+1, center.y, nCenter.x+1, nCenter.y);
+                    g.drawLine(center.x, center.y+1, nCenter.x, nCenter.y+1);
+                    g.drawLine(center.x+2, center.y, nCenter.x+2, nCenter.y);
+                    g.drawLine(center.x, center.y+2, nCenter.x, nCenter.y+2);
+                    
                 }
-            } catch (ConcurrentModificationException e) { // can trigger during WorldFactory.clearWalledOffDoors
-                e.printStackTrace();
             }
         }
     }

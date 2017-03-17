@@ -1,8 +1,15 @@
 package building;
 
 import java.awt.Point;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
+import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class PointUtils {
     
@@ -56,6 +63,47 @@ public class PointUtils {
         int[] extrema = getExtrema(b1, b2);
         return extrema[0] <= p.x && p.x <= extrema[1] 
                 && extrema[2] <= p.y && p.y <= extrema[3];
+    }
+    
+    public static List<Point> floodRemove(Collection<Point> points, Point seed, Predicate<Point> filter) {
+        return floodRemove(points, Arrays.asList(seed), filter);
+    }
+    
+    /**
+     * Removes the filter-satisfying points flood-adjacent to a seed point.
+     */
+    public static List<Point> floodRemove(Collection<Point> points, List<Point> seeds, Predicate<Point> filter) {
+        List<Point> res = new ArrayList<Point>();
+        Queue<Point> q = new LinkedList<Point>();
+        q.addAll(seeds);
+        List<Boolean> seedInPoints = seeds.stream().map(x -> points.contains(x)).collect(Collectors.toList());
+        points.removeAll(seeds);
+        Point p;
+        while (!q.isEmpty()) {
+            p = q.poll();
+            res.add(p);
+            Point[] neighbors = {new Point(p.x-1, p.y), new Point(p.x+1, p.y),
+                    new Point(p.x, p.y-1), new Point(p.x, p.y+1)};
+            for (Point n : neighbors) {
+                if (points.contains(n) && filter.test(n)) {
+                    points.remove(n);
+                    q.add(n);
+                }
+            }
+        }
+        
+        for (int i = 0; i < seeds.size(); i++) {
+            Point seed = seeds.get(i);
+            if (!filter.test(seed)) {
+                // if seed isn't part of the flood fill, fix stuff
+                res.remove(seed);
+                if (seedInPoints.get(i)) {
+                    points.add(seed);
+                }
+            }
+        }
+        
+        return res;
     }
 
 }
