@@ -3,8 +3,6 @@ package testing;
 import static org.junit.Assert.*;
 import static threedee.VectorUtils.*;
 
-import java.util.Arrays;
-
 import org.junit.Test;
 
 
@@ -12,14 +10,14 @@ public class TestVectorUtils {
     
     @Test
     public void testPlaneLineIntersection() {
-        double[] p1 = {1, 1, 0};
+        double[] p1 = {0, 1, 0};
         double[] p2 = {1, 0, 0};
         double[] p3 = {0, 0, 1};
         double[] l1 = {0, 0, 0};
         double[] l2 = {1, 1, 1};
         
         double[] res = {0, 0, 0};
-        double[] expected = {0.5, 0.5, 0.5};
+        double[] expected = {1/3.0, 1/3.0, 1/3.0};
         
         planeLineIntersection(p1, p2, p3, l1, l2, res);
         

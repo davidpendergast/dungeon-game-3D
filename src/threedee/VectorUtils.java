@@ -53,11 +53,11 @@ public class VectorUtils {
         if (Math.abs(denomDet) <= EPS) {
             return; // err
         }
-        double numDet = det(1.0, 1.0, 1.0, 0.0,
+        double numDet = det(1.0, 1.0, 1.0, 1.0,
                 p1[0], p2[0], p3[0], l1[0],
                 p1[1], p2[1], p3[1], l1[1],
                 p1[2], p2[2], p3[2], l1[2]);
-        double t = denomDet / numDet;
+        double t = - numDet / denomDet;
         res[0] = l1[0] + (l2[0] - l1[0])*t;
         res[1] = l1[1] + (l2[1] - l1[1])*t;
         res[2] = l1[2] + (l2[2] - l1[2])*t;

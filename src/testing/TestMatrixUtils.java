@@ -27,4 +27,14 @@ public class TestMatrixUtils {
         double det = MatrixUtils.det(1,2,-5, 6,-1,3,4,-7,9,-4,2,6,1,2,3,4);
         assertEquals(1670.0, det, EPS);
     }
+    
+    @Test
+    public void testDet4x4Binary() {
+        double det = MatrixUtils.det(
+                1.0, 1.0, 1.0, 0.0,
+                0.0, 1.0, 0.0, 1.0,
+                1.0, 0.0, 0.0, 1.0,
+                0.0, 0.0, 1.0, 1.0);
+        assertEquals(det, -3, EPS);
+    }
 }
