@@ -24,6 +24,19 @@ public class TestVectorUtils {
         assertArrayEquals(expected, res, EPS);
     }
     
+    @Test
+    public void testRotateXY() {
+        double[] v = {1,1,1};
+        rotateXY(v, Math.PI, v);
+        assertArrayEquals(new double[] {-1,-1, 1}, v, EPS);
+    }
+    
+    @Test
+    public void testStr() {
+        double[] v = v();
+        assertEquals("{0.0, 0.0, 0.0}", str(v, 1));
+    }
+    
     private static void assertArrayEquals(double[] expected, double[] res, double eps) {
         for (int i = 0; i < expected.length; i++) {
             assertEquals(expected[i], res[i], eps);

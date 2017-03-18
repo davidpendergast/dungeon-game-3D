@@ -1,5 +1,7 @@
 package threedee;
 
+import static threedee.VectorUtils.*;
+
 import java.awt.Color;
 
 public class Screen {
@@ -16,6 +18,26 @@ public class Screen {
         }
         for (int n = pixels.length/2; n < pixels.length; n++) {
             pixels[n] = Color.GRAY.getRGB();
+        }
+        
+        double[] pt1 = v();
+        double[] pt2 = v();
+        
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                int i = y * width + x;
+                
+                interpolate(x / (double)width, camera.pTopLeft, camera.pTopRight, pt1);
+                interpolate(y / (double)height, camera.pTopLeft, camera.pBottomLeft, pt2);
+                
+                add(pt1, sub(pt2, camera.pTopLeft, pt2), pt1);
+                
+                for (Rect3D r : dungeon.polygons) {
+                    if (r.distanceTo(camera.pos, pt1) > -1) {
+                        pixels[i] = r.color;
+                    }
+                }
+            }
         }
         
         return pixels;

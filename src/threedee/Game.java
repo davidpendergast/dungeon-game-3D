@@ -30,10 +30,13 @@ public class Game extends JFrame implements Runnable {
         thread = new Thread(this);
         image = new BufferedImage(640, 480, BufferedImage.TYPE_INT_RGB);
         pixels = ((DataBufferInt)image.getRaster().getDataBuffer()).getData();
-        camera = new Camera(4.5, 4.5, 1, 0, 0, -.66);
+        camera = new Camera(
+                0.0, 0.0, 2.0,
+                1.0, 0.0, 0.0,
+                0.66, 0.5);
         state = new InputState();
         screen = new Screen(640,480);
-        Dungeon dungeon = new Dungeon();
+        dungeon = new Dungeon();
         
         setSize(640, 480);
         setResizable(false);
@@ -41,6 +44,7 @@ public class Game extends JFrame implements Runnable {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setBackground(Color.BLACK);
         setLocationRelativeTo(null);
+        addKeyListener(state);
         setVisible(true);
         start();
                 
