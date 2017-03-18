@@ -3,3 +3,4 @@
 .settings
 *.xcf
 bin/
+*.log
