@@ -27,14 +27,18 @@ public class Screen {
             for (int y = 0; y < height; y++) {
                 int i = y * width + x;
                 
+                if (x == 320 && y == 240) {
+                    System.currentTimeMillis();
+                }
                 interpolate(x / (double)width, camera.pTopLeft, camera.pTopRight, pt1);
                 interpolate(y / (double)height, camera.pTopLeft, camera.pBottomLeft, pt2);
                 
                 add(pt1, sub(pt2, camera.pTopLeft, pt2), pt1);
                 
+                double[] renderBlob = {0, 0};
                 for (Rect3D r : dungeon.polygons) {
-                    if (r.distanceTo(camera.pos, pt1) > -1) {
-                        pixels[i] = r.color;
+                    if(r.distAndColorOnRay(camera.pos, pt1, renderBlob) != null) {
+                        pixels[i] = (int)renderBlob[1]; 
                     }
                 }
             }

@@ -5,6 +5,8 @@ import static threedee.VectorUtils.*;
 
 import org.junit.Test;
 
+import threedee.VectorUtils;
+
 
 public class TestVectorUtils {
     
@@ -29,6 +31,14 @@ public class TestVectorUtils {
         double[] v = {1,1,1};
         rotateXY(v, Math.PI, v);
         assertArrayEquals(new double[] {-1,-1, 1}, v, EPS);
+    }
+    
+    @Test
+    public void testDistFromPointToLine() {
+        double[] l1 = v(1,0,0);
+        double[] l2 = v(0,1,0);
+        double[] p1 = v(0,0,0);
+        assertEquals(Math.sqrt(0.5), distFromPointToLine(p1, l1, l2), EPS);
     }
     
     @Test

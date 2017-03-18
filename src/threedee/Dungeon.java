@@ -15,14 +15,14 @@ public class Dungeon {
                 VectorUtils.v(10, 40, 0));
         r1.color = Color.RED.getRGB();
         
-        Rect3D r2 = new Rect3D(
-                VectorUtils.v(6, 0, 0),
-                VectorUtils.v(7, 0, 0),
-                VectorUtils.v(7, 1, 0));
-        r2.color = Color.GREEN.getRGB();
+//        Rect3D r2 = new Rect3D(
+//                VectorUtils.v(6, 0, 0),
+//                VectorUtils.v(7, 0, 0),
+//                VectorUtils.v(7, 1, 0));
+//        r2.color = Color.GREEN.getRGB();
         
         polygons.add(r1);
-        polygons.add(r2);
+//        polygons.add(r2);
     }
 
 }

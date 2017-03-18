@@ -7,7 +7,7 @@ import static threedee.MatrixUtils.*;
  */
 public class VectorUtils {
     public static final double EPS = 0.000001;
-    
+    public static final double[] ZERO = v();
     /**
      * @return <code>new double[] {0, 0, 0}</code>
      */
@@ -130,6 +130,10 @@ public class VectorUtils {
         return res;
     }
     
+    public static double dot(double[] v1, double[] v2) {
+        return v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2];
+    }
+    
     /**
      * Returns whether the point p1 is contained within the rectangular prism
      * defined by corners b1, b2.
@@ -179,6 +183,14 @@ public class VectorUtils {
         res[2] = l1[2] + (l2[2] - l1[2])*t;
         
         return res;
+    }
+    
+    public static double distFromPointToLine(double[] p, double[] l1, double[] l2) {
+         double[] a = sub(l2,l1,v());
+         double[] b = sub(l1,p,v());
+         double denom = dist(l2, l1);
+         double num = mag(cross(a,b,a));
+         return num / denom;
     }
     
     public static String str(double[] v) {

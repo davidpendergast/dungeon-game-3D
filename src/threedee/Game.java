@@ -45,6 +45,8 @@ public class Game extends JFrame implements Runnable {
         setBackground(Color.BLACK);
         setLocationRelativeTo(null);
         addKeyListener(state);
+        addMouseListener(state);
+        addMouseMotionListener(state);
         setVisible(true);
         start();
                 
@@ -82,8 +84,16 @@ public class Game extends JFrame implements Runnable {
         double delta = 0;
         requestFocus();
         
+        int frameCount = 0;
+        long lastReport = System.nanoTime();
+        
         while (running) {
             long now = System.nanoTime();
+            if (now > lastReport + 1000000000) {
+                System.out.println("FPS: "+frameCount);
+                frameCount = 0;
+                lastReport = now;
+            }
             double dt = ((now - lastTime) / ns);
             delta = delta + dt;
             lastTime = now;
@@ -92,6 +102,7 @@ public class Game extends JFrame implements Runnable {
                 delta--;
             }
             screen.update(camera, dungeon, pixels);
+            frameCount++;
             render();
         }
     }

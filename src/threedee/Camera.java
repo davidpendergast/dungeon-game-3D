@@ -33,8 +33,8 @@ public class Camera implements Updatable {
     private double[] dummy = v();
     
     // temporary
-    public double moveSpeed = 0.1;    // tile per sec
-    public double rotateSpeed = -0.006;  // radians per sec
+    public double moveSpeed = 0.08;    // tile per sec
+    public double rotateSpeed = 0.006;  // radians per sec
     
     public Camera(double xPos, double yPos, double zPos, double xDir, double yDir, double zDir, double viewWidth, double viewHeight) {
         this.pos = v(xPos, yPos, zPos);
@@ -75,23 +75,28 @@ public class Camera implements Updatable {
     @Override
     public void update(double dt, InputState state) {
         if (state.left ^ state.right) {
-            int sign = state.left ? -1 : 1;
-            VectorUtils.rotateXY(dir, sign * dt *rotateSpeed, dir);
-            
-            System.out.println("\npos="+str(pos));
-            System.out.println("dir="+str(dir));
-            System.out.println("top: "+str(pTopLeft)+" "+str(pTop)+" "+str(pTopRight));
-            System.out.println("mid: "+str(pLeft)+" "+str(pCenter)+" "+str(pRight));
-            System.out.println("bot: "+str(pBottomLeft)+" "+str(pBottom)+" "+str(pBottomRight));
+            int sign = state.left ? 1 : -1;
+            pos[0] += sign * dt * moveSpeed * left[0]; //TODO : normalize (x,y)
+            pos[1] += sign * dt * moveSpeed * left[1];
+            updateDerivedQuantities();
         }
         if (state.forward ^ state.backward) {
             int sign = state.forward ? 1 : -1;
             pos[0] += sign * dt * moveSpeed * dir[0]; //TODO : normalize (x,y)
             pos[1] += sign * dt * moveSpeed * dir[1];
-            System.out.println("pos="+str(pos));
+            updateDerivedQuantities();
+//            System.out.println("pos="+str(pos));
         }
-        
-        updateDerivedQuantities();
+        if (state.turnLeft ^ state.turnRight) {
+            int sign = state.turnLeft ? 1 : -1;
+            VectorUtils.rotateXY(dir, sign * dt * rotateSpeed, dir);
+            updateDerivedQuantities();
+//            System.out.println("\npos="+str(pos));
+//            System.out.println("dir="+str(dir));
+//            System.out.println("top: "+str(pTopLeft)+" "+str(pTop)+" "+str(pTopRight));
+//            System.out.println("mid: "+str(pLeft)+" "+str(pCenter)+" "+str(pRight));
+//            System.out.println("bot: "+str(pBottomLeft)+" "+str(pBottom)+" "+str(pBottomRight));
+        }
     }
     
 
