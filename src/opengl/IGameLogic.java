@@ -5,4 +5,5 @@ public interface IGameLogic {
     public void input(Window window);
     public void update(float interval);
     public void render(Window window);
+    public void cleanup();
 }

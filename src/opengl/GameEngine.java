@@ -26,12 +26,14 @@ public class GameEngine implements Runnable {
             gameLoop();
         } catch (Exception e){
             e.printStackTrace();
+        } finally {
+            cleanup();
         }
     }
     
     private void init() throws Exception {
-        gameLogic.init();
         window.init();
+        gameLogic.init();
     }
     
     private void gameLoop() {
@@ -79,6 +81,10 @@ public class GameEngine implements Runnable {
     private void render() {
         gameLogic.render(window);
         window.update();
+    }
+    
+    private void cleanup() {
+        gameLogic.cleanup();
     }
     
     private long time() {
