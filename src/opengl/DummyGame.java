@@ -9,6 +9,7 @@ public class DummyGame implements IGameLogic {
     float direction = 0;
     
     private final Renderer renderer;
+    private Mesh mesh;
     
     public DummyGame() {
         renderer = new Renderer();
@@ -17,6 +18,15 @@ public class DummyGame implements IGameLogic {
     @Override
     public void init() throws Exception {
         renderer.init();
+        float[] positions = new float[] { 
+                -0.5f,  0.5f, 0.0f, 
+                -0.5f, -0.5f, 0.0f,
+                 0.5f, -0.5f, 0.0f, 
+                 0.5f,  0.5f, 0.0f };
+        int[] indices = new int[] {
+                0, 1, 3, 3, 1, 2
+        };
+        mesh = new Mesh(positions, indices);
     }
 
     @Override
@@ -42,12 +52,12 @@ public class DummyGame implements IGameLogic {
     @Override
     public void render(Window window) {
         window.setClearColor(color, color, color, 0.0f);
-        renderer.render(window);
+        renderer.render(window, mesh);
     }
 
     @Override
     public void cleanup() {
-        
+        mesh.cleanup();
     }
 
 
