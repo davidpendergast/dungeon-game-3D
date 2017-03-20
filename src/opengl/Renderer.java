@@ -33,8 +33,8 @@ public class Renderer {
         
         // bind the VAO
         glBindVertexArray(mesh.getVaoId());
-        glEnableVertexAttribArray(0);
-        
+        glEnableVertexAttribArray(0);   // enable index lookups
+        glEnableVertexAttribArray(1);   // enable color
         // draw the vertices
         glDrawElements(GL_TRIANGLES, mesh.getVertexCount(), GL_UNSIGNED_INT, 0);
         
