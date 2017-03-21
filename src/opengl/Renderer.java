@@ -7,6 +7,7 @@ import static org.lwjgl.opengl.GL30.*;
 
 import java.nio.FloatBuffer;
 
+import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.system.MemoryUtil;
 
@@ -14,15 +15,28 @@ public class Renderer {
     
     private ShaderProgram shaderProgram;
     
+    private static final float FOV = (float)Math.toRadians(60.0);
+    private static final float Z_NEAR = 0.01f;
+    private static final float Z_FAR = 1000.0f;
+    
+    private Matrix4f projectionMatrix;
+    
     public void init() throws Exception {
         shaderProgram = new ShaderProgram();
         shaderProgram.createVertexShader(Utils.loadResource("shaders/vertex.vs"));
         shaderProgram.createFragmentShader(Utils.loadResource("shaders/fragment.fs"));
         shaderProgram.link();
+        
+        shaderProgram.createUniform("projectionMatrix");
     }
     
     public void render(Window window, Mesh mesh) {
         clear();
+        
+        if (window.getResized() || projectionMatrix == null) {
+            float aspectRatio = window.getWidth() / (float) window.getHeight();
+            projectionMatrix = new Matrix4f().perspective(FOV, aspectRatio, Z_NEAR, Z_FAR);
+        }
         
         if (window.getResized()) {
             GL11.glViewport(0, 0, window.getWidth(), window.getHeight());
@@ -30,6 +44,8 @@ public class Renderer {
         }
         
         shaderProgram.bind();
+        
+        shaderProgram.setUniform("projectionMatrix", projectionMatrix);
         
         // bind the VAO
         glBindVertexArray(mesh.getVaoId());

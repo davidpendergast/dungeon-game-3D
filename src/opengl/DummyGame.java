@@ -19,10 +19,10 @@ public class DummyGame implements IGameLogic {
     public void init() throws Exception {
         renderer.init();
         float[] positions = new float[] { 
-                -0.5f,  0.5f, 0.0f, 
-                -0.5f, -0.5f, 0.0f,
-                 0.5f, -0.5f, 0.0f, 
-                 0.5f,  0.5f, 0.0f };
+                -0.5f,  0.5f, -1.05f, 
+                -0.5f, -0.5f, -1.05f,
+                 0.5f, -0.5f, -1.05f, 
+                 0.5f,  0.5f, -1.05f };
         int[] indices = new int[] {
                 0, 1, 3, 3, 1, 2
         };
