@@ -19,7 +19,11 @@ public class Renderer {
     private static final float Z_NEAR = 0.01f;
     private static final float Z_FAR = 1000.0f;
     
-    private Matrix4f projectionMatrix;
+    private Transformation transformation;
+    
+    public Renderer() {
+        transformation = new Transformation();
+    }
     
     public void init() throws Exception {
         shaderProgram = new ShaderProgram();
@@ -28,15 +32,11 @@ public class Renderer {
         shaderProgram.link();
         
         shaderProgram.createUniform("projectionMatrix");
+        shaderProgram.createUniform("worldMatrix");
     }
     
-    public void render(Window window, Mesh mesh) {
+    public void render(Window window, GameItem[] gameItems) {
         clear();
-        
-        if (window.getResized() || projectionMatrix == null) {
-            float aspectRatio = window.getWidth() / (float) window.getHeight();
-            projectionMatrix = new Matrix4f().perspective(FOV, aspectRatio, Z_NEAR, Z_FAR);
-        }
         
         if (window.getResized()) {
             GL11.glViewport(0, 0, window.getWidth(), window.getHeight());
@@ -45,18 +45,16 @@ public class Renderer {
         
         shaderProgram.bind();
         
+        Matrix4f projectionMatrix = transformation.getProjectionMatrix(FOV, 
+                window.getWidth(), window.getHeight(), Z_NEAR, Z_FAR);
         shaderProgram.setUniform("projectionMatrix", projectionMatrix);
         
-        // bind the VAO
-        glBindVertexArray(mesh.getVaoId());
-        glEnableVertexAttribArray(0);   // enable index lookups
-        glEnableVertexAttribArray(1);   // enable color
-        // draw the vertices
-        glDrawElements(GL_TRIANGLES, mesh.getVertexCount(), GL_UNSIGNED_INT, 0);
-        
-        // restore the state
-        glDisableVertexAttribArray(0);
-        glBindVertexArray(0);
+        for (GameItem item : gameItems) {
+            Matrix4f worldMatrix = transformation.getWorldMatrix(item.getPosition(), 
+                    item.getRotation(), item.getScale());
+            shaderProgram.setUniform("worldMatrix", worldMatrix);
+            item.getMesh().render();
+        }
         
         shaderProgram.unbind();
     }
